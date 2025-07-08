@@ -1,15 +1,32 @@
 # 📋 Cara Import Database MongoDB untuk Kedai J.A
 
+## ⚠️ **PENTING: WebContainer Environment**
+
+Aplikasi ini berjalan di WebContainer (browser environment) yang **TIDAK MENDUKUNG** MongoDB lokal.
+
+**✅ SOLUSI: Gunakan MongoDB Atlas (Cloud Database)**
+
+1. **Buat akun MongoDB Atlas**: https://cloud.mongodb.com
+2. **Buat cluster gratis**
+3. **Dapatkan connection string**
+4. **Update file `.env.local`**:
+   ```env
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kedai-ja?retryWrites=true&w=majority
+   ```
+
+---
+
 ## 🎯 **Metode 1: Menggunakan Seed Script (RECOMMENDED)**
 
 Ini adalah cara termudah dan sudah otomatis:
 
 ### 1. Pastikan MongoDB Running
 ```bash
-# Jika menggunakan MongoDB lokal
-mongod
+# ❌ TIDAK BISA: MongoDB lokal tidak didukung di WebContainer
+# mongod
 
-# Atau pastikan MongoDB Atlas connection string sudah benar di .env.local
+# ✅ GUNAKAN: MongoDB Atlas connection string di .env.local
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kedai-ja?retryWrites=true&w=majority
 ```
 
 ### 2. Jalankan Seed Script
@@ -200,6 +217,17 @@ Kemudian test:
 ---
 
 ## 🚨 **Troubleshooting**
+
+### Error: "ECONNREFUSED 127.0.0.1:27017"
+```bash
+# ❌ Ini terjadi karena mencoba connect ke MongoDB lokal
+# ✅ SOLUSI: Gunakan MongoDB Atlas
+
+# 1. Buat akun di https://cloud.mongodb.com
+# 2. Buat cluster gratis
+# 3. Dapatkan connection string
+# 4. Update .env.local dengan connection string Atlas
+```
 
 ### Error: "MongoServerError: Authentication failed"
 ```bash

@@ -1,201 +1,100 @@
-# Kedai J.A - Restaurant Website
+# Kedai J.A - Restaurant Management System
 
-A full-stack restaurant website built with Next.js, MongoDB, and Tailwind CSS.
+A modern restaurant management system built with Next.js, MongoDB, and Tailwind CSS.
 
-## Features
+## 🚀 Quick Start
 
-- 🏠 **Public Website**: Home, Menu, About, Contact pages
-- 👨‍💼 **Admin Panel**: Dashboard, Menu Management, Settings
-- 🔐 **Authentication**: JWT-based admin login
-- 🤖 **AI Chatbot**: Flowise integration ready
-- 📱 **Responsive Design**: Mobile-first approach
-- 🎨 **Modern UI**: Tailwind CSS with beautiful components
+### 1. Environment Setup
 
-## Tech Stack
+Create a `.env.local` file in the root directory:
 
-- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
-- **Backend**: Next.js API Routes, MongoDB, Mongoose
-- **Authentication**: JWT with HTTP-only cookies
-- **Icons**: Lucide React
-- **Database**: MongoDB
+```env
+# MongoDB Atlas Connection (REQUIRED)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kedai-ja?retryWrites=true&w=majority
 
-## Quick Start
+# JWT Secret for authentication
+JWT_SECRET=your-super-secret-jwt-key-here-change-this-in-production
+```
 
-### Prerequisites
+### 2. Get MongoDB Atlas Connection String
 
-- Node.js 18+ 
-- MongoDB (local or Atlas)
+Since this project runs in WebContainer (browser environment), you need to use MongoDB Atlas:
 
-### Installation
+1. **Create MongoDB Atlas Account**: Go to [https://cloud.mongodb.com](https://cloud.mongodb.com)
+2. **Create a New Cluster**: Choose the free tier
+3. **Create Database User**: Set username and password
+4. **Whitelist IP Address**: Add `0.0.0.0/0` for WebContainer access
+5. **Get Connection String**: Copy the connection string and update `.env.local`
 
-1. **Clone and install dependencies:**
+### 3. Install Dependencies
+
 ```bash
-git clone <repository-url>
-cd kedai-ja
 npm install
 ```
 
-2. **Set up environment variables:**
-```bash
-cp .env.local.example .env.local
-```
+### 4. Seed Database (Optional)
 
-Edit `.env.local`:
-```env
-MONGODB_URI=mongodb://localhost:27017/kedai-ja
-JWT_SECRET=super_secret_key_kedai_ja_2024
-```
-
-3. **Start MongoDB:**
-```bash
-# If using local MongoDB
-mongod
-
-# Or use MongoDB Atlas connection string in .env.local
-```
-
-4. **Seed the database:**
 ```bash
 npm run seed
 ```
 
-5. **Start the development server:**
+This will create:
+- Admin account: `admin@kedai-ja.com` / `admin123`
+- Sample menu items
+- Restaurant settings
+
+### 5. Run Development Server
+
 ```bash
 npm run dev
 ```
 
-6. **Open your browser:**
-- Public site: http://localhost:3000
-- Admin login: http://localhost:3000/admin/login
+## 📱 Features
 
-## Default Credentials
+- **Public Website**: Menu display, restaurant info, contact page
+- **Admin Panel**: Menu management, settings, dashboard
+- **Responsive Design**: Works on desktop and mobile
+- **Authentication**: Secure admin login system
+- **Database Integration**: MongoDB with Mongoose ODM
 
-- **Email**: admin@kedai-ja.com
-- **Password**: admin123
+## 🔗 Important Links
 
-## Project Structure
+- **Public Site**: http://localhost:3000
+- **Admin Login**: http://localhost:3000/admin/login
+- **Admin Dashboard**: http://localhost:3000/admin/dashboard
 
-```
-kedai-ja/
-├── app/                    # Next.js App Router
-│   ├── page.tsx           # Home page
-│   ├── menu/              # Menu page
-│   ├── about/             # About page
-│   ├── contact/           # Contact page
-│   ├── admin/             # Admin panel
-│   │   ├── login/         # Admin login
-│   │   ├── dashboard/     # Admin dashboard
-│   │   ├── menu/          # Menu management
-│   │   └── settings/      # Settings management
-│   └── api/               # API routes
-├── lib/                   # Utilities
-│   ├── db.ts             # MongoDB connection
-│   └── auth.ts           # JWT authentication
-├── models/               # Mongoose models
-│   ├── Admin.ts
-│   ├── MenuItem.ts
-│   └── Settings.ts
-├── scripts/
-│   └── seed.ts           # Database seeding
-├── public/
-│   └── chatbot.js        # Flowise chatbot
-└── middleware.ts         # Route protection
-```
+## 🛠️ Tech Stack
 
-## API Endpoints
+- **Frontend**: Next.js 14, React, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB Atlas
+- **Authentication**: JWT with cookies
+- **UI Components**: shadcn/ui
+- **Icons**: Lucide React
 
-### Public
-- `GET /api/menu` - Get all menu items
-- `GET /api/settings` - Get restaurant settings
+## 📋 Database Collections
 
-### Admin (Protected)
-- `POST /api/login` - Admin login
-- `POST /api/logout` - Admin logout
-- `POST /api/menu` - Create menu item
-- `PUT /api/menu/[id]` - Update menu item
-- `DELETE /api/menu/[id]` - Delete menu item
-- `PUT /api/settings` - Update settings
+- **admins**: Admin user accounts
+- **menuitems**: Restaurant menu items
+- **settings**: Restaurant configuration
 
-## Deployment
+## 🚨 Troubleshooting
 
-### Local Development
-```bash
-npm run dev
-```
+### MongoDB Connection Issues
 
-### Production Build
-```bash
-npm run build
-npm start
-```
+If you see `ECONNREFUSED 127.0.0.1:27017`:
 
-### Environment Variables for Production
-```env
-MONGODB_URI=your_mongodb_atlas_connection_string
-JWT_SECRET=your_super_secure_jwt_secret
-NODE_ENV=production
-```
+1. **Check `.env.local`**: Ensure `MONGODB_URI` points to MongoDB Atlas
+2. **Verify Connection String**: Test connection in MongoDB Compass
+3. **Check Network Access**: Ensure IP whitelist includes `0.0.0.0/0`
+4. **Restart Application**: Run `npm run dev` again
 
-## Database Schema
+### Admin Login Issues
 
-### Admin
-```javascript
-{
-  email: String (unique),
-  password: String (hashed),
-  name: String,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+1. **Run Seed Script**: `npm run seed` to create admin account
+2. **Check Credentials**: `admin@kedai-ja.com` / `admin123`
+3. **Clear Browser Cache**: Clear cookies and local storage
 
-### MenuItem
-```javascript
-{
-  name: String,
-  description: String,
-  price: Number,
-  category: 'Makanan' | 'Minuman',
-  image: String (URL),
-  available: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+## 📄 License
 
-### Settings
-```javascript
-{
-  restaurantName: String,
-  description: String,
-  address: String,
-  contact: String,
-  hours: String,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-## Chatbot Integration
-
-The project includes Flowise AI chatbot integration. To activate:
-
-1. Set up your Flowise instance
-2. Update `public/chatbot.js` with your chatflow ID and API host
-3. The chatbot will appear as a floating button on all pages
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Support
-
-For support, email admin@kedai-ja.com or create an issue in the repository.
+MIT License - feel free to use this project for your own restaurant!

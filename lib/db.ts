@@ -1,13 +1,13 @@
 import mongoose, { Mongoose } from 'mongoose';
-import dotenv from 'dotenv';
-
-// ✅ Tambahkan ini untuk load file .env.local ketika dipanggil dari CLI (seperti npm run seed)
-dotenv.config({ path: '.env.local' });
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  throw new Error(
+    'Please define the MONGODB_URI environment variable inside .env.local\n' +
+    'For WebContainer environment, use MongoDB Atlas: https://cloud.mongodb.com\n' +
+    'Local MongoDB (127.0.0.1:27017) is not supported in browser environments.'
+  );
 }
 
 declare global {
@@ -30,7 +30,10 @@ async function connectDB() {
   if (!cached!.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: 'mongodbVSCodePlaygroundDB', // ✅ Optional: tentukan nama database default di sini
+      dbName: 'kedai-ja',
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     };
 
     cached!.promise = mongoose.connect(MONGODB_URI!, opts);
@@ -38,8 +41,10 @@ async function connectDB() {
 
   try {
     cached!.conn = await cached!.promise;
+    console.log('✅ MongoDB connected successfully');
   } catch (e) {
     cached!.promise = null;
+    console.error('❌ MongoDB connection failed:', e);
     throw e;
   }
 
