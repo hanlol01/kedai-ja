@@ -51,12 +51,9 @@ function Calendar({
         day_hidden: 'invisible',
         ...classNames,
       }}
-<<<<<<< HEAD
-=======
       components={{
         Chevron: ({ ...props }) => <ChevronRight className="h-4 w-4" {...props} />,
       }}
->>>>>>> b4cf614050d6b84ceec731371803c2ae60118f74
       {...props}
     />
   );
