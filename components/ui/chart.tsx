@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import * as RechartsPrimitive from 'recharts';
+import type { LegendProps } from 'recharts';
 
 import { cn } from '@/lib/utils';
 
@@ -269,8 +270,8 @@ const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     {
-      payload?: RechartsPrimitive.LegendProps['payload'];
-      verticalAlign?: RechartsPrimitive.LegendProps['verticalAlign'];
+      payload?: LegendProps['payload'];
+      verticalAlign?: LegendProps['verticalAlign'];
       hideIcon?: boolean;
       nameKey?: string;
     }
