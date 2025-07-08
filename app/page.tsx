@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, Menu, X } from 'lucide-react';
+import Chatbot from "@/components/chatbot";
 
 interface MenuItem {
   _id: string;
@@ -353,6 +354,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <Chatbot />
     </div>
   );
 }
