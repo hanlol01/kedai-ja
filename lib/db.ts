@@ -30,7 +30,7 @@ async function connectDB() {
   if (!cached!.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: 'kedai-ja',
+      dbName: 'mongodbVSCodePlaygroundDB',
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
