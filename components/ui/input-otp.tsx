@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+// @ts-ignore
 import { OTPInput, OTPInputContext } from 'input-otp';
 import { Dot } from 'lucide-react';
 
@@ -42,7 +43,7 @@ const InputOTPSlot = React.forwardRef<
       ref={ref}
       className={cn(
         'relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md',
-        isActive && 'z-10 ring-2 ring-ring ring-offset-background',
+        isActive ? 'z-10 ring-2 ring-ring ring-offset-background' : undefined,
         className
       )}
       {...props}
