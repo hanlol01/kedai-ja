@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
-import Chatbot from '@/components/chatbot';
+import Chatbot from '@/components/ui/chatbot';
 
 const inter = Inter({ subsets: ['latin'] });
 
