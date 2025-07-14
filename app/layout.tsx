@@ -23,7 +23,7 @@ export default function RootLayout({
         
         {/* Flowise AI Chatbot */}
         <Script
-          src="/chatbot.js"
+          src="/components/ui/chatbot.tsx"
           strategy="afterInteractive"
         />
         <Chatbot  />
