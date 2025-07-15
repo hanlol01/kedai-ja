@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
-import Chatbot from '@/components/ui/chatbot';
+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,12 +21,8 @@ export default function RootLayout({
       <body className={inter.className}>
         {children}
         
-        {/* Flowise AI Chatbot */}
-        <Script
-          src="/components/ui/chatbot.tsx"
-          strategy="afterInteractive"
-        />
-        <Chatbot  />
+        {/* Chatbot JS */}
+        <Script src="/chatbot.js" strategy="afterInteractive" />
       </body>
     </html>
   );
