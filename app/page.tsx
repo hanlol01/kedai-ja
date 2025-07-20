@@ -29,18 +29,64 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setSettings({
+        restaurantName: 'Kedai J.A',
+        description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
+        address: 'Jl. Raya Leles No.45, Garut',
+        contact: '081234567890',
+        hours: 'Senin - Minggu, 09.00 - 21.00'
+      });
+    }, 10000); // 10 second timeout
+
+    fetchData().finally(() => {
+      clearTimeout(timeoutId);
+    });
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const fetchData = async () => {
     try {
-      const [menuResponse, settingsResponse] = await Promise.all([
-        fetch('/api/menu').catch(() => ({ ok: false, json: () => Promise.resolve({ menuItems: [] }) })),
-        fetch('/api/settings').catch(() => ({ ok: false, json: () => Promise.resolve({ settings: null }) }))
+      // Set timeout for each fetch
+      const fetchWithTimeout = (url: string, timeout = 5000) => {
+        return Promise.race([
+          fetch(url),
+          new Promise<Response>((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), timeout)
+          )
+        ]);
+      };
+
+      const [menuResponse, settingsResponse] = await Promise.allSettled([
+        fetchWithTimeout('/api/menu').then(res => res.json()).catch(() => ({ 
+          success: true, 
+          menuItems: [] 
+        })),
+        fetchWithTimeout('/api/settings').then(res => res.json()).catch(() => ({ 
+          success: true, 
+          settings: {
+            restaurantName: 'Kedai J.A',
+            description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
+            address: 'Jl. Raya Leles No.45, Garut',
+            contact: '081234567890',
+            hours: 'Senin - Minggu, 09.00 - 21.00'
+          }
+        }))
       ]);
 
-      const menuData = await menuResponse.json();
-      const settingsData = await settingsResponse.json();
+      const menuData = menuResponse.status === 'fulfilled' ? menuResponse.value : { success: true, menuItems: [] };
+      const settingsData = settingsResponse.status === 'fulfilled' ? settingsResponse.value : { 
+        success: true, 
+        settings: {
+          restaurantName: 'Kedai J.A',
+          description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
+          address: 'Jl. Raya Leles No.45, Garut',
+          contact: '081234567890',
+          hours: 'Senin - Minggu, 09.00 - 21.00'
+        }
+      };
 
       const availableItems = menuData.menuItems?.filter((item: MenuItem) => item.available) || [];
       setFeaturedItems(availableItems.slice(0, 3));
