@@ -15,7 +15,8 @@ export async function GET() {
         description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
         address: 'Jl. Raya Leles No.45, Garut',
         contact: '081234567890',
-        hours: 'Senin - Minggu, 09.00 - 21.00'
+        hours: 'Senin - Minggu, 09.00 - 21.00',
+        email: 'info@kedai-ja.com'
       });
       await settings.save();
     }
@@ -35,7 +36,8 @@ export async function GET() {
           description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
           address: 'Jl. Raya Leles No.45, Garut',
           contact: '081234567890',
-          hours: 'Senin - Minggu, 09.00 - 21.00'
+          hours: 'Senin - Minggu, 09.00 - 21.00',
+          email: 'info@kedai-ja.com'
         }
       },
       { status: 500 }
@@ -58,6 +60,11 @@ export async function PUT(request: NextRequest) {
     const updateData = await request.json();
 
     let settings = await Settings.findOne({});
+
+    // Fallback agar email selalu ada
+    if (!('email' in updateData) || !updateData.email) {
+      updateData.email = settings?.email || 'info@kedai-ja.com';
+    }
     
     if (!settings) {
       settings = new Settings(updateData);

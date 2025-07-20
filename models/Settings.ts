@@ -7,6 +7,7 @@ export interface ISettings {
   address: string;
   contact: string;
   hours: string;
+  email: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -41,6 +42,12 @@ const SettingsSchema = new mongoose.Schema({
     required: [true, 'Hours is required'],
     trim: true,
     default: 'Senin - Minggu, 09.00 - 21.00'
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    trim: true,
+    default: 'admin@email.com'
   },
 }, {
   timestamps: true,

@@ -9,6 +9,7 @@ interface Settings {
   address: string;
   contact: string;
   hours: string;
+  email: string;
 }
 
 export default function AdminSettings() {
@@ -18,6 +19,7 @@ export default function AdminSettings() {
     address: '',
     contact: '',
     hours: '',
+    email: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,12 +34,13 @@ export default function AdminSettings() {
     try {
       const response = await fetch('/api/settings');
       const data = await response.json();
-      setSettings(data.settings || {
-        restaurantName: 'Kedai J.A',
-        description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
-        address: 'Jl. Raya Leles No.45, Garut',
-        contact: '081234567890',
-        hours: 'Senin - Minggu, 09.00 - 21.00'
+      setSettings({
+        restaurantName: data.settings?.restaurantName || 'Kedai J.A',
+        description: data.settings?.description || 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
+        address: data.settings?.address || 'Jl. Raya Leles No.45, Garut',
+        contact: data.settings?.contact || '081234567890',
+        hours: data.settings?.hours || 'Senin - Minggu, 09.00 - 21.00',
+        email: data.settings?.email || ''
       });
       setLoading(false);
     } catch (error) {
@@ -179,6 +182,19 @@ export default function AdminSettings() {
                 onChange={(e) => handleInputChange('hours', e.target.value)}
                 required
                 placeholder="e.g., Senin - Minggu, 09.00 - 21.00"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={settings.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>

@@ -138,9 +138,9 @@ export default function AdminTestimonials() {
             <div>
               <p className="text-sm font-medium text-gray-600">Rating Rata-rata</p>
               <div className="flex items-center">
-                <p className="text-3xl font-bold text-gray-900 mr-2">{getAverageRating()}</p>
+                <p className="text-3xl font-bold text-gray-900 mr-2">{getAverageRating().toFixed(1)}</p>
                 <div className="flex">
-                  {renderStars(Math.round(getAverageRating()))}
+                  {renderStars(Math.round(parseFloat(getAverageRating().toString())))}
                 </div>
               </div>
             </div>

@@ -24,14 +24,11 @@ interface Settings {
   address: string;
   contact: string;
   hours: string;
+  email: string;
 }
 
 export default function Footer() {
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [email, setEmail] = useState('');
-  const [newsletterLoading, setNewsletterLoading] = useState(false);
-  const [newsletterMessage, setNewsletterMessage] = useState('');
-  const [newsletterError, setNewsletterError] = useState('');
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -55,7 +52,8 @@ export default function Footer() {
         description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
         address: 'Jl. Raya Leles No.45, Garut',
         contact: '081234567890',
-        hours: 'Senin - Minggu, 09.00 - 21.00'
+        hours: 'Senin - Minggu, 09.00 - 21.00',
+        email: 'info@kedai-ja.com'
       });
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -64,38 +62,9 @@ export default function Footer() {
         description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
         address: 'Jl. Raya Leles No.45, Garut',
         contact: '081234567890',
-        hours: 'Senin - Minggu, 09.00 - 21.00'
+        hours: 'Senin - Minggu, 09.00 - 21.00',
+        email: 'info@kedai-ja.com'
       });
-    }
-  };
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setNewsletterLoading(true);
-    setNewsletterMessage('');
-    setNewsletterError('');
-
-    try {
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
-
-      setNewsletterMessage('Terima kasih! Anda telah berhasil berlangganan newsletter.');
-      setEmail('');
-    } catch (error) {
-      setNewsletterError(error instanceof Error ? error.message : 'Something went wrong');
-    } finally {
-      setNewsletterLoading(false);
     }
   };
 
@@ -168,45 +137,8 @@ export default function Footer() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <Mail className="h-5 w-5 text-orange-400 flex-shrink-0" />
-                  <span className="text-gray-300">info@kedai-ja.com</span>
+                  <span className="text-gray-300">{settings.email}</span>
                 </div>
-              </div>
-
-              {/* Newsletter Subscription */}
-              <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-3 text-orange-400">Newsletter</h4>
-                <form onSubmit={handleNewsletterSubmit} className="space-y-3">
-                  <div className="flex">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email Anda"
-                      required
-                      className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white"
-                    />
-                    <button
-                      type="submit"
-                      disabled={newsletterLoading}
-                      className="bg-orange-500 text-white px-4 py-2 rounded-r-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                    >
-                      {newsletterLoading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                  {newsletterMessage && (
-                    <p className="text-green-400 text-sm">{newsletterMessage}</p>
-                  )}
-                  {newsletterError && (
-                    <p className="text-red-400 text-sm flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {newsletterError}
-                    </p>
-                  )}
-                </form>
               </div>
 
               {/* Social Media */}

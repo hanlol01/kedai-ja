@@ -24,7 +24,6 @@ export default function AdminNavbar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
     { name: 'Menu', href: '/admin/menu', icon: Menu },
     { name: 'Testimonials', href: '/admin/testimonials', icon: Star },
-    { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
