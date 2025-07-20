@@ -318,7 +318,7 @@ export default function AdminMenu() {
               <p className="text-gray-600 text-sm mb-2">{item.description}</p>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xl font-bold text-orange-500">
-                  Rp {item.price.toLocaleString('id-ID')}
+                  Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
                 </span>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                   item.category === 'Makanan' 

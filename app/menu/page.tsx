@@ -148,7 +148,7 @@ export default function Menu() {
                   <p className="text-gray-600 mb-4">{item.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-orange-500">
-                      Rp {item.price.toLocaleString('id-ID')}
+                      Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
                     </span>
                     <div className="flex items-center text-green-600">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>

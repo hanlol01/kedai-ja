@@ -2,7 +2,13 @@
 
 import React, { useState } from "react";
 import { MessageCircle } from "lucide-react";
-import { BubbleChat } from "flowise-embed-react";
+import dynamic from "next/dynamic";
+
+// Dynamic import BubbleChat
+const BubbleChat = dynamic(
+  () => import("flowise-embed-react").then(mod => mod.BubbleChat),
+  { ssr: false }
+);
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
