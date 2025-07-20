@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChefHat, Filter, ArrowLeft } from 'lucide-react';
+import Footer from '@/components/ui/Footer';
 
 interface MenuItem {
   _id: string;
@@ -161,6 +162,8 @@ export default function Menu() {
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   );
 }

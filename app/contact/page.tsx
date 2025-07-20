@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Phone, MapPin, Clock, ArrowLeft } from 'lucide-react';
+import Footer from '@/components/ui/Footer';
 
 interface Settings {
   restaurantName: string;
@@ -162,6 +163,8 @@ export default function Contact() {
           </ul>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }

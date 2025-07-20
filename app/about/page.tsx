@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ChefHat, Heart, Users, Award, ArrowLeft } from 'lucide-react';
+import Footer from '@/components/ui/Footer';
 
 export default function About() {
   return (
@@ -124,6 +125,8 @@ export default function About() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }

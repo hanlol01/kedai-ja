@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, Menu, X } from 'lucide-react';
+import Footer from '@/app/admin/components/Footer';
 
 interface MenuItem {
   _id: string;
@@ -385,20 +386,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <ChefHat className="h-8 w-8 text-orange-500 mr-2" />
-              <span className="text-xl font-bold">{settings?.restaurantName}</span>
-            </div>
-            <p className="text-gray-400 mb-4">
-              &copy; 2024 {settings?.restaurantName}. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
