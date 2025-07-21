@@ -24,6 +24,7 @@ export default function AdminNavbar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
     { name: 'Menu', href: '/admin/menu', icon: Menu },
     { name: 'Testimonials', href: '/admin/testimonials', icon: Star },
+    { name: 'Pesan Pengguna', href: '/admin/contact', icon: Mail },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

@@ -151,8 +151,8 @@ export default function TestimonialPage() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Masukkan nama lengkap Anda"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
+                  placeholder="Masukkan nama lengkap"
                 />
               </div>
 
@@ -165,8 +165,8 @@ export default function TestimonialPage() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Masukkan email Anda"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
+                  placeholder="Masukkan email"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function TestimonialPage() {
                 onChange={(e) => handleInputChange('message', e.target.value)}
                 required
                 rows={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
                 placeholder="Ceritakan pengalaman Anda di Kedai J.A..."
               />
             </div>

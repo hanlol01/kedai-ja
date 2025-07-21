@@ -16,6 +16,7 @@ export default function AdminTestimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filterRating, setFilterRating] = useState<number | null>(null);
 
   useEffect(() => {
     fetchTestimonials();
@@ -112,6 +113,11 @@ export default function AdminTestimonials() {
 
   const ratingDistribution = getRatingDistribution();
 
+  // Filter testimonials sesuai rating
+  const filteredTestimonials = filterRating
+    ? testimonials.filter(t => t.rating === filterRating)
+    : testimonials;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -181,6 +187,26 @@ export default function AdminTestimonials() {
         </div>
       </div>
 
+      {/* Filter Rating */}
+      <div className="mb-8 flex flex-wrap items-center gap-2">
+        <span className="mr-2 text-gray-700 font-medium">Filter Rating:</span>
+        <button
+          className={`px-3 py-1 rounded-full border text-sm font-semibold transition-colors duration-200 ${filterRating === null ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-100'}`}
+          onClick={() => setFilterRating(null)}
+        >
+          Semua
+        </button>
+        {[5,4,3,2,1].map(star => (
+          <button
+            key={star}
+            className={`px-3 py-1 rounded-full border text-sm font-semibold flex items-center gap-1 transition-colors duration-200 ${filterRating === star ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-100'}`}
+            onClick={() => setFilterRating(star)}
+          >
+            {star} <Star className="h-4 w-4 fill-current text-yellow-400" />
+          </button>
+        ))}
+      </div>
+
       {/* Rating Distribution */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Distribusi Rating</h2>
@@ -213,7 +239,7 @@ export default function AdminTestimonials() {
       </div>
 
       {/* Testimonials List */}
-      {testimonials.length === 0 ? (
+      {filteredTestimonials.length === 0 ? (
         <div className="text-center py-16">
           <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Belum ada testimoni</h3>
@@ -221,7 +247,7 @@ export default function AdminTestimonials() {
         </div>
       ) : (
         <div className="space-y-6">
-          {testimonials.map((testimonial) => (
+          {filteredTestimonials.map((testimonial) => (
             <div key={testimonial._id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
