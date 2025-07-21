@@ -11,6 +11,7 @@ interface MenuItem {
   category: 'Makanan' | 'Minuman';
   image?: string;
   available: boolean;
+  isBestSeller: boolean;
 }
 
 interface MenuFormData {
@@ -20,6 +21,7 @@ interface MenuFormData {
   category: 'Makanan' | 'Minuman';
   image: string;
   available: boolean;
+  isBestSeller: boolean;
 }
 
 export default function AdminMenu() {
@@ -34,6 +36,7 @@ export default function AdminMenu() {
     category: 'Makanan',
     image: '',
     available: true,
+    isBestSeller: false,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -87,6 +90,7 @@ export default function AdminMenu() {
         category: 'Makanan',
         image: '',
         available: true,
+        isBestSeller: false,
       });
       fetchMenuItems();
     } catch (error) {
@@ -103,6 +107,7 @@ export default function AdminMenu() {
       category: item.category,
       image: item.image || '',
       available: item.available,
+      isBestSeller: item.isBestSeller,
     });
     setShowForm(true);
   };
@@ -136,6 +141,7 @@ export default function AdminMenu() {
       category: 'Makanan',
       image: '',
       available: true,
+      isBestSeller: false,
     });
   };
 
@@ -274,6 +280,19 @@ export default function AdminMenu() {
                 </label>
               </div>
 
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isBestSeller"
+                  checked={formData.isBestSeller}
+                  onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
+                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isBestSeller" className="ml-2 block text-sm text-gray-700">
+                  Best Seller
+                </label>
+              </div>
+
               <div className="flex space-x-3">
                 <button
                   type="submit"
@@ -307,13 +326,20 @@ export default function AdminMenu() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  item.available 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {item.available ? 'Available' : 'Unavailable'}
-                </span>
+                <div className="flex space-x-2">
+                  {item.isBestSeller && (
+                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                      Best Seller
+                    </span>
+                  )}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    item.available 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {item.available ? 'Available' : 'Unavailable'}
+                  </span>
+                </div>
               </div>
               <p className="text-gray-600 text-sm mb-2">{item.description}</p>
               <div className="flex items-center justify-between mb-4">
