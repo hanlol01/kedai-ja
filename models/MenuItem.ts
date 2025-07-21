@@ -41,6 +41,10 @@ const MenuItemSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  isBestSeller: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

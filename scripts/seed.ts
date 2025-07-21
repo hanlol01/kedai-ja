@@ -6,6 +6,7 @@ import connectDB from '../lib/db';
 import Admin from '../models/Admin';
 import MenuItem from '../models/MenuItem';
 import Settings from '../models/Settings';
+import BestSeller from '../models/BestSeller';
 
 async function seedDatabase() {
   try {
@@ -19,6 +20,7 @@ async function seedDatabase() {
     await Admin.deleteMany({});
     await MenuItem.deleteMany({});
     await Settings.deleteMany({});
+    await BestSeller.deleteMany({});
     console.log('🗑️  Cleared existing data');
 
     // Create admin account
@@ -56,14 +58,49 @@ async function seedDatabase() {
         category: 'Makanan',
         image: 'https://images.pexels.com/photos/4518669/pexels-photo-4518669.jpeg',
         available: true
+      },
+      {
+        name: 'Nasi Gudeg',
+        description: 'Nasi gudeg khas Yogyakarta dengan ayam dan telur, cita rasa manis yang autentik',
+        price: 18000,
+        category: 'Makanan',
+        image: 'https://images.pexels.com/photos/4518669/pexels-photo-4518669.jpeg',
+        available: true
+      },
+      {
+        name: 'Es Cendol',
+        description: 'Es cendol segar dengan santan dan gula merah, minuman penutup yang sempurna',
+        price: 8000,
+        category: 'Minuman',
+        image: 'https://images.pexels.com/photos/1638280/pexels-photo-1638280.jpeg',
+        available: true
+      },
+      {
+        name: 'Gado-Gado',
+        description: 'Gado-gado dengan sayuran segar dan bumbu kacang yang kaya rasa',
+        price: 14000,
+        category: 'Makanan',
+        image: 'https://images.pexels.com/photos/4518843/pexels-photo-4518843.jpeg',
+        available: true
       }
     ];
 
+    const createdMenuItems = [];
     for (const item of menuItems) {
       const menuItem = new MenuItem(item);
-      await menuItem.save();
+      const savedItem = await menuItem.save();
+      createdMenuItems.push(savedItem);
     }
     console.log('🍽️  Created menu items:', menuItems.length);
+
+    // Create some best sellers (first 3 menu items)
+    for (let i = 0; i < Math.min(3, createdMenuItems.length); i++) {
+      const bestSeller = new BestSeller({
+        menuId: createdMenuItems[i]._id
+      });
+      await bestSeller.save();
+    }
+    console.log('⭐ Created best sellers: 3 items');
 
     // Create settings
     const settings = new Settings({
@@ -79,7 +116,8 @@ async function seedDatabase() {
     console.log('🎉 Database seeding completed successfully!');
     console.log('\n📋 Summary:');
     console.log('- Admin: admin@kedai-ja.com / admin123');
-    console.log('- Menu items: 3 items created');
+    console.log('- Menu items: 6 items created');
+    console.log('- Best sellers: 3 items created');
     console.log('- Restaurant settings: configured');
     console.log('\n🚀 You can now start the application with: npm run dev');
     

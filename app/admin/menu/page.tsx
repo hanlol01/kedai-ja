@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, ChefHat, AlertCircle, X } from 'lucide-react';
+import { Plus, Edit, Trash2, ChefHat, AlertCircle, X, Star } from 'lucide-react';
+import Link from 'next/link';
 
 interface MenuItem {
   _id: string;
@@ -11,7 +12,6 @@ interface MenuItem {
   category: 'Makanan' | 'Minuman';
   image?: string;
   available: boolean;
-  isBestSeller: boolean;
 }
 
 interface MenuFormData {
@@ -21,7 +21,6 @@ interface MenuFormData {
   category: 'Makanan' | 'Minuman';
   image: string;
   available: boolean;
-  isBestSeller: boolean;
 }
 
 export default function AdminMenu() {
@@ -36,10 +35,11 @@ export default function AdminMenu() {
     category: 'Makanan',
     image: '',
     available: true,
-    isBestSeller: false,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  // Tambahkan state baru untuk file gambar
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchMenuItems();
@@ -62,6 +62,17 @@ export default function AdminMenu() {
     setError('');
     setSuccess('');
 
+    let imageBase64 = formData.image;
+    if (imageFile) {
+      const reader = new FileReader();
+      const filePromise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(imageFile);
+      imageBase64 = await filePromise;
+    }
+
     try {
       const url = editingItem ? `/api/menu/${editingItem._id}` : '/api/menu';
       const method = editingItem ? 'PUT' : 'POST';
@@ -71,7 +82,7 @@ export default function AdminMenu() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, image: imageBase64 }),
       });
 
       const data = await response.json();
@@ -90,8 +101,8 @@ export default function AdminMenu() {
         category: 'Makanan',
         image: '',
         available: true,
-        isBestSeller: false,
       });
+      setImageFile(null);
       fetchMenuItems();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Something went wrong');
@@ -107,7 +118,6 @@ export default function AdminMenu() {
       category: item.category,
       image: item.image || '',
       available: item.available,
-      isBestSeller: item.isBestSeller,
     });
     setShowForm(true);
   };
@@ -141,7 +151,6 @@ export default function AdminMenu() {
       category: 'Makanan',
       image: '',
       available: true,
-      isBestSeller: false,
     });
   };
 
@@ -163,13 +172,22 @@ export default function AdminMenu() {
           <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
           <p className="text-gray-600 mt-2">Kelola menu makanan dan minuman</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-orange-600 transition-colors duration-200"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add Menu Item</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-orange-600 transition-colors duration-200"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Menu Item</span>
+          </button>
+          <Link
+            href="/admin/menu/best-seller"
+            className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-yellow-600 transition-colors duration-200"
+          >
+            <Star className="h-4 w-4" />
+            <span>Tambah Menu Best Seller</span>
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -237,7 +255,7 @@ export default function AdminMenu() {
                   onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                   required
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                 />
               </div>
 
@@ -248,7 +266,7 @@ export default function AdminMenu() {
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as 'Makanan' | 'Minuman' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                 >
                   <option value="Makanan">Makanan</option>
                   <option value="Minuman">Minuman</option>
@@ -257,14 +275,22 @@ export default function AdminMenu() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image URL (optional)
+                  Upload Image (optional)
                 </label>
                 <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files && e.target.files[0];
+                    setImageFile(file || null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                 />
+                {imageFile && (
+                  <div className="mt-2">
+                    <img src={URL.createObjectURL(imageFile)} alt="Preview" className="h-24 rounded" />
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center">
@@ -277,19 +303,6 @@ export default function AdminMenu() {
                 />
                 <label htmlFor="available" className="ml-2 block text-sm text-gray-700">
                   Available
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isBestSeller"
-                  checked={formData.isBestSeller}
-                  onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isBestSeller" className="ml-2 block text-sm text-gray-700">
-                  Best Seller
                 </label>
               </div>
 
@@ -326,20 +339,13 @@ export default function AdminMenu() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                <div className="flex space-x-2">
-                  {item.isBestSeller && (
-                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                      Best Seller
-                    </span>
-                  )}
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    item.available 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {item.available ? 'Available' : 'Unavailable'}
-                  </span>
-                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  item.available 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {item.available ? 'Available' : 'Unavailable'}
+                </span>
               </div>
               <p className="text-gray-600 text-sm mb-2">{item.description}</p>
               <div className="flex items-center justify-between mb-4">

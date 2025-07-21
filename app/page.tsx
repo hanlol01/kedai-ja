@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, Menu, X } from 'lucide-react';
 import Footer from '@/app/admin/components/Footer';
 
-interface MenuItem {
+type MenuItem = {
   _id: string;
   name: string;
   description: string;
@@ -13,7 +13,8 @@ interface MenuItem {
   category: 'Makanan' | 'Minuman';
   image?: string;
   available: boolean;
-}
+  isBestSeller?: boolean;
+};
 
 interface Settings {
   restaurantName: string;
@@ -25,7 +26,7 @@ interface Settings {
 }
 
 export default function Home() {
-  const [featuredItems, setFeaturedItems] = useState<MenuItem[]>([]);
+  const [bestSellerItems, setBestSellerItems] = useState<MenuItem[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -94,7 +95,10 @@ export default function Home() {
       };
 
       const availableItems = menuData.menuItems?.filter((item: MenuItem) => item.available) || [];
-      setFeaturedItems(availableItems.slice(0, 3));
+      // Perbaiki filter agar isBestSeller true, 'true' (string), atau truthy tetap tampil
+      setBestSellerItems(
+        availableItems.filter((item: MenuItem) => Boolean(item.isBestSeller)).slice(0, 6)
+      );
       setSettings(settingsData.settings || {
         restaurantName: 'Kedai J.A',
         description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
@@ -106,6 +110,7 @@ export default function Home() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setBestSellerItems([]);
       setSettings({
         restaurantName: 'Kedai J.A',
         description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
@@ -276,32 +281,37 @@ export default function Home() {
       </section>
 
       {/* Featured Menu Section */}
-      <section className="py-16">
+      <section className="py-16 bg-gradient-to-br from-yellow-50 via-orange-100 to-pink-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Menu Unggulan
+              Menu Best Seller
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Cicipi hidangan terbaik kami yang telah menjadi favorit pelanggan
             </p>
           </div>
 
-          {featuredItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {featuredItems.map((item) => (
-                <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                  <div className="h-48 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+          {bestSellerItems.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 mb-12">
+              {bestSellerItems.map((item) => (
+                <div key={item._id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 border-2 border-orange-100 relative group">
+                  <div className="h-48 bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center relative">
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
-                      <ChefHat className="h-16 w-16 text-white" />
+                      <ChefHat className="h-16 w-16 text-white opacity-80" />
                     )}
+                    <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold shadow group-hover:scale-110 transition-transform">
+                      BEST SELLER
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.name}</h3>
-                    <p className="text-gray-600 mb-4">{item.description}</p>
-                    <div className="flex items-center justify-between">
+                  <div className="p-6 flex flex-col h-48 justify-between">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-1 truncate">{item.name}</h3>
+                      <p className="text-gray-600 mb-3 text-sm truncate">{item.description}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
                       <span className="text-2xl font-bold text-orange-500">
                         Rp {item.price.toLocaleString('id-ID')}
                       </span>
@@ -316,18 +326,24 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+              {/* Jika kurang dari 6, tampilkan kotak kosong */}
+              {Array.from({ length: 6 - bestSellerItems.length }).map((_, idx) => (
+                <div key={idx} className="bg-white rounded-2xl shadow-xl border-2 border-dashed border-orange-100 flex items-center justify-center h-96 opacity-60">
+                  <span className="text-gray-300 text-lg">Best Seller Slot</span>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-12">
               <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Menu unggulan akan segera hadir</p>
+              <p className="text-gray-600">Menu best seller akan segera hadir</p>
             </div>
           )}
 
           <div className="text-center">
             <Link
               href="/menu"
-              className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors duration-200 inline-flex items-center"
+              className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors duration-200 inline-flex items-center shadow-lg"
             >
               Lihat Semua Menu
               <ArrowRight className="ml-2 h-5 w-5" />
