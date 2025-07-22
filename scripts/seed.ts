@@ -93,14 +93,14 @@ async function seedDatabase() {
     }
     console.log('🍽️  Created menu items:', menuItems.length);
 
-    // Create some best sellers (first 3 menu items)
-    for (let i = 0; i < Math.min(3, createdMenuItems.length); i++) {
+    // Create some best sellers (first 4 menu items untuk demo yang lebih baik)
+    for (let i = 0; i < Math.min(4, createdMenuItems.length); i++) {
       const bestSeller = new BestSeller({
         menuId: createdMenuItems[i]._id
       });
       await bestSeller.save();
     }
-    console.log('⭐ Created best sellers: 3 items');
+    console.log('⭐ Created best sellers: 4 items');
 
     // Create settings
     const settings = new Settings({
@@ -108,7 +108,8 @@ async function seedDatabase() {
       description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
       address: 'Jl. Raya Leles No.45, Garut',
       contact: '081234567890',
-      hours: 'Senin - Minggu, 09.00 - 21.00'
+      hours: 'Senin - Minggu, 09.00 - 21.00',
+      email: 'info@kedai-ja.com'
     });
     await settings.save();
     console.log('⚙️  Created restaurant settings');
@@ -117,7 +118,7 @@ async function seedDatabase() {
     console.log('\n📋 Summary:');
     console.log('- Admin: admin@kedai-ja.com / admin123');
     console.log('- Menu items: 6 items created');
-    console.log('- Best sellers: 3 items created');
+    console.log('- Best sellers: 4 items created');
     console.log('- Restaurant settings: configured');
     console.log('\n🚀 You can now start the application with: npm run dev');
     

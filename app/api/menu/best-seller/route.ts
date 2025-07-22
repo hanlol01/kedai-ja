@@ -14,10 +14,18 @@ export async function GET() {
       .limit(6)
       .populate('menuId');
     
-    // Filter out any null menuId (jika menu sudah dihapus)
+    // Filter out any null menuId (jika menu sudah dihapus) dan hanya ambil yang available
     const validBestSellers = bestSellers
-      .filter(item => item.menuId)
-      .map(item => item.menuId);
+      .filter(item => item.menuId && item.menuId.available)
+      .map(item => ({
+        _id: item.menuId._id,
+        name: item.menuId.name,
+        description: item.menuId.description,
+        price: item.menuId.price,
+        category: item.menuId.category,
+        image: item.menuId.image,
+        available: item.menuId.available
+      }));
     
     return NextResponse.json({ 
       success: true, 

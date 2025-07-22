@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, ChefHat, AlertCircle, X, Star } from 'lucide-react';
+import { Plus, Edit, Trash2, ChefHat, AlertCircle, X, Star, Search, Filter as FilterIcon } from 'lucide-react';
 import Link from 'next/link';
 
 interface MenuItem {
@@ -40,6 +40,10 @@ export default function AdminMenu() {
   const [success, setSuccess] = useState('');
   // Tambahkan state baru untuk file gambar
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<'all' | 'Makanan' | 'Minuman'>('all');
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageSrc, setModalImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMenuItems();
@@ -154,6 +158,13 @@ export default function AdminMenu() {
     });
   };
 
+  // Filter menu berdasarkan search dan kategori
+  const filteredMenuItems = menuItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -167,22 +178,22 @@ export default function AdminMenu() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
-          <p className="text-gray-600 mt-2">Kelola menu makanan dan minuman</p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
+          <h1 className="text-3xl font-bold text-gray-900 w-full sm:w-auto">Kelola Menu</h1>
+          <p className="text-gray-600 mt-2 w-full sm:w-auto">Kelola menu makanan dan minuman</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-orange-600 transition-colors duration-200"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Menu Item</span>
-          </button>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto mt-4 sm:mt-0 justify-center sm:justify-end items-stretch sm:items-center">
+        <button
+          onClick={() => setShowForm(true)}
+            className="w-full sm:w-auto bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-orange-600 transition-colors duration-200 font-semibold"
+        >
+          <Plus className="h-4 w-4" />
+            <span>Tambah Menu</span>
+        </button>
           <Link
             href="/admin/menu/best-seller"
-            className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-yellow-600 transition-colors duration-200"
+            className="w-full sm:w-auto bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-yellow-600 transition-colors duration-200 font-semibold"
           >
             <Star className="h-4 w-4" />
             <span>Tambah Menu Best Seller</span>
@@ -302,7 +313,7 @@ export default function AdminMenu() {
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
                 <label htmlFor="available" className="ml-2 block text-sm text-gray-700">
-                  Available
+                  Tersedia
                 </label>
               </div>
 
@@ -326,33 +337,157 @@ export default function AdminMenu() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {menuItems.map((item) => (
-          <div key={item._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="h-48 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex-1 flex items-center gap-2">
+          <div className="relative w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Cari menu..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap items-center mt-2 md:mt-0">
+          <span className="text-gray-700 text-sm flex items-center mr-1">
+            <FilterIcon className="h-4 w-4 mr-1" />
+            Filter :
+          </span>
+          <button
+            onClick={() => setFilterCategory('all')}
+            className={`px-4 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterCategory === 'all' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
+          >
+            Semua Menu
+          </button>
+          <button
+            onClick={() => setFilterCategory('Makanan')}
+            className={`px-4 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterCategory === 'Makanan' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
+          >
+            Makanan
+          </button>
+          <button
+            onClick={() => setFilterCategory('Minuman')}
+            className={`px-4 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterCategory === 'Minuman' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
+          >
+            Minuman
+          </button>
+        </div>
+      </div>
+
+      {/* Tabel untuk desktop */}
+      <div className="hidden md:block">
+        <div className="overflow-x-auto rounded-lg shadow bg-white">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gambar</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredMenuItems.map((item) => (
+                <tr key={item._id} className="align-middle">
+                  <td className="px-4 py-2">
+                    {item.image ? (
+                      <button onClick={() => { setShowImageModal(true); setModalImageSrc(item.image!); }} className="focus:outline-none group">
+                        <img src={item.image} alt={item.name} className="h-12 w-12 object-cover rounded group-hover:ring-2 group-hover:ring-orange-400 text-black transition" />
+                      </button>
+                    ) : (
+                      <ChefHat className="h-8 w-8 text-gray-300" />
+                    )}
+                  </td>
+                  <td className="px-4 py-2 font-semibold align-middle text-black">{item.name}</td>
+                  <td className="px-4 py-2 text-sm text-gray-600 truncate max-w-xs align-middle">{item.description}</td>
+                  <td className="px-4 py-2 font-bold text-orange-500 align-middle">Rp {item.price.toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-2 align-middle">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      item.category === 'Makanan' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {item.category}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 align-middle">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      item.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {item.available ? 'Tersedia' : 'Tidak Tersedia'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 align-middle">
+                    <div className="flex gap-2 justify-center items-center">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs flex items-center"
+                      >
+                        <Edit className="h-4 w-4 mr-1" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs flex items-center"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal gambar besar */}
+      {showImageModal && modalImageSrc && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" onClick={() => setShowImageModal(false)}>
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full relative" onClick={e => e.stopPropagation()}>
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowImageModal(false)}>
+              <X className="h-6 w-6" />
+            </button>
+            <img src={modalImageSrc} alt="Preview" className="w-full h-auto max-h-[70vh] object-contain rounded" />
+          </div>
+        </div>
+      )}
+
+      {/* Grid untuk mobile */}
+      <div className="grid grid-cols-1 gap-6 md:hidden">
+        {filteredMenuItems.map((item) => (
+          <div key={item._id} className="bg-white rounded-lg shadow-md overflow-hidden p-4 flex flex-col">
+            <div className="h-36 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
               {item.image ? (
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                <button onClick={() => { setShowImageModal(true); setModalImageSrc(item.image!); }} className="focus:outline-none group w-full h-full">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-t-lg group-hover:ring-2 group-hover:ring-orange-400 transition" />
+                </button>
               ) : (
-                <ChefHat className="h-16 w-16 text-white" />
+                <ChefHat className="h-12 w-12 text-white" />
               )}
             </div>
-            <div className="p-4">
+            <div className="p-2 flex-1 flex flex-col justify-between">
+              <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  <h3 className="text-lg font-semibold text-gray-900 truncate">{item.name}</h3>
+                  <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
                   item.available 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>
-                  {item.available ? 'Available' : 'Unavailable'}
+                    {item.available ? 'Tersedia' : 'Tidak Tersedia'}
                 </span>
               </div>
-              <p className="text-gray-600 text-sm mb-2">{item.description}</p>
-              <div className="flex items-center justify-between mb-4">
+                <p className="text-gray-600 text-sm mb-2 truncate">{item.description}</p>
+                <div className="flex items-center justify-between mb-2">
                 <span className="text-xl font-bold text-orange-500">
-                  Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
+                    Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
                 </span>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
                   item.category === 'Makanan' 
                     ? 'bg-orange-100 text-orange-800' 
                     : 'bg-blue-100 text-blue-800'
@@ -360,17 +495,18 @@ export default function AdminMenu() {
                   {item.category}
                 </span>
               </div>
-              <div className="flex space-x-2">
+              </div>
+              <div className="flex space-x-2 mt-2">
                 <button
                   onClick={() => handleEdit(item)}
-                  className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
+                  className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center text-sm"
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(item._id)}
-                  className="flex-1 bg-red-500 text-white py-2 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
+                  className="flex-1 bg-red-500 text-white py-2 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center justify-center text-sm"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete
@@ -381,7 +517,7 @@ export default function AdminMenu() {
         ))}
       </div>
 
-      {menuItems.length === 0 && (
+      {filteredMenuItems.length === 0 && (
         <div className="text-center py-16">
           <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No menu items found</h3>

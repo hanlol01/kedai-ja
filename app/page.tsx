@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, Menu, X } from 'lucide-react';
+import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, Menu, X, ShoppingCart, Headphones, Utensils, User } from 'lucide-react';
 import Footer from '@/app/admin/components/Footer';
 
 type MenuItem = {
@@ -63,10 +63,10 @@ export default function Home() {
         ]);
       };
 
-      const [menuResponse, settingsResponse] = await Promise.allSettled([
-        fetchWithTimeout('/api/menu').then(res => res.json()).catch(() => ({ 
+      const [bestSellerResponse, settingsResponse] = await Promise.allSettled([
+        fetchWithTimeout('/api/menu/best-seller').then(res => res.json()).catch(() => ({ 
           success: true, 
-          menuItems: [] 
+          bestSellers: [] 
         })),
         fetchWithTimeout('/api/settings').then(res => res.json()).catch(() => ({ 
           success: true, 
@@ -81,7 +81,7 @@ export default function Home() {
         }))
       ]);
 
-      const menuData = menuResponse.status === 'fulfilled' ? menuResponse.value : { success: true, menuItems: [] };
+      const bestSellerData = bestSellerResponse.status === 'fulfilled' ? bestSellerResponse.value : { success: true, bestSellers: [] };
       const settingsData = settingsResponse.status === 'fulfilled' ? settingsResponse.value : { 
         success: true, 
         settings: {
@@ -94,11 +94,8 @@ export default function Home() {
         }
       };
 
-      const availableItems = menuData.menuItems?.filter((item: MenuItem) => item.available) || [];
-      // Perbaiki filter agar isBestSeller true, 'true' (string), atau truthy tetap tampil
-      setBestSellerItems(
-        availableItems.filter((item: MenuItem) => Boolean(item.isBestSeller)).slice(0, 6)
-      );
+      // Set best seller items dari API best-seller
+      setBestSellerItems(bestSellerData.bestSellers || []);
       setSettings(settingsData.settings || {
         restaurantName: 'Kedai J.A',
         description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
@@ -245,35 +242,45 @@ export default function Home() {
               Kami berkomitmen memberikan pengalaman kuliner terbaik dengan kualitas dan pelayanan yang tak tertandingi
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <ChefHat className="h-8 w-8 text-orange-500" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            {/* Pelayanan Terbaik */}
+            <div className="bg-white rounded-lg shadow hover:shadow-lg transition p-8 flex flex-col items-center text-center group cursor-pointer hover:bg-orange-500 hover:text-white">
+              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mb-4 group-hover:bg-white group-hover:bg-opacity-20 transition">
+                <Star className="h-8 w-8 text-orange-500 group-hover:text-white transition" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Resep Autentik</h3>
-              <p className="text-gray-600">
-                Menggunakan resep turun-temurun yang telah diwariskan dari generasi ke generasi
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-white transition">Pelayanan Terbaik</h3>
+              <p className="text-gray-600 group-hover:text-orange-100 transition">
+                Siap memberikan pengalaman pelayanan yang terbaik terhadap pelanggan yang baik
               </p>
             </div>
-
-            <div className="text-center">
-              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Star className="h-8 w-8 text-orange-500" />
+            {/* Quality Food (highlight on hover) */}
+            <div className="bg-white rounded-lg shadow hover:shadow-lg transition p-8 flex flex-col items-center text-center group cursor-pointer hover:bg-orange-500 hover:text-white">
+              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mb-4 group-hover:bg-white group-hover:bg-opacity-20 transition">
+                <Utensils className="h-8 w-8 text-orange-500 group-hover:text-white transition" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Kualitas Terjamin</h3>
-              <p className="text-gray-600">
-                Menggunakan bahan-bahan segar dan berkualitas tinggi untuk setiap hidangan
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-white transition">Kualitas Hidangan</h3>
+              <p className="text-gray-600 group-hover:text-orange-100 transition">
+                Nikmati cita rasa autentik lokal dengan resep turun-temurun untuk generasi ke generasi.
               </p>
             </div>
-
-            <div className="text-center">
-              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-8 w-8 text-orange-500" />
+            {/* Online Order */}
+            <div className="bg-white rounded-lg shadow hover:shadow-lg transition p-8 flex flex-col items-center text-center group cursor-pointer hover:bg-orange-500 hover:text-white">
+              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mb-4 group-hover:bg-white group-hover:bg-opacity-20 transition">
+                <ShoppingCart className="h-8 w-8 text-orange-500 group-hover:text-white transition" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Pelayanan Cepat</h3>
-              <p className="text-gray-600">
-                Melayani dengan cepat dan ramah untuk memberikan pengalaman terbaik
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-white transition">Pemesanan Online</h3>
+              <p className="text-gray-600 group-hover:text-orange-100 transition">
+                Dapatkan pengalaman kuliner yang lebih praktis dengan pemesanan online.
+              </p>
+            </div>
+            {/* 24/7 Service */}
+            <div className="bg-white rounded-lg shadow hover:shadow-lg transition p-8 flex flex-col items-center text-center group cursor-pointer hover:bg-orange-500 hover:text-white">
+              <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mb-4 group-hover:bg-white group-hover:bg-opacity-20 transition">
+                <Headphones className="h-8 w-8 text-orange-500 group-hover:text-white transition" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-white transition">24/7 Service</h3>
+              <p className="text-gray-600 group-hover:text-orange-100 transition">
+                Kami siap mendengarkan anda, hubungi kami melalui tombol Chatbot di bawah ini.
               </p>
             </div>
           </div>
@@ -293,7 +300,8 @@ export default function Home() {
           </div>
 
           {bestSellerItems.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 mb-12">
+            <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-12">
               {bestSellerItems.map((item) => (
                 <div key={item._id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 border-2 border-orange-100 relative group">
                   <div className="h-48 bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center relative">
@@ -326,13 +334,8 @@ export default function Home() {
                   </div>
                 </div>
               ))}
-              {/* Jika kurang dari 6, tampilkan kotak kosong */}
-              {Array.from({ length: 6 - bestSellerItems.length }).map((_, idx) => (
-                <div key={idx} className="bg-white rounded-2xl shadow-xl border-2 border-dashed border-orange-100 flex items-center justify-center h-96 opacity-60">
-                  <span className="text-gray-300 text-lg">Best Seller Slot</span>
-                </div>
-              ))}
             </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />

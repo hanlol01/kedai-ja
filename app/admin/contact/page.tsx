@@ -57,6 +57,8 @@ export default function AdminContacts() {
     });
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,65 +151,99 @@ export default function AdminContacts() {
           <p className="text-gray-600">Pesan dari form kontak akan muncul di sini</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Pengirim
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Subject
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Pesan
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Waktu Dikirim
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {contacts.map((contact) => (
-                  <tr key={contact._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="bg-gray-100 rounded-full p-2 mr-3">
-                          <User className="h-5 w-5 text-gray-600" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 max-w-[150px] truncate" title={contact.name}>{contact.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center">
-                            <Mail className="h-4 w-4 mr-1" />
-                            {contact.email}
+        <>
+          {/* Desktop Table (md ke atas) */}
+          <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pesan</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Dikirim</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {contacts.map((contact) => (
+                    <tr key={contact._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="bg-gray-100 rounded-full p-2 mr-3">
+                            <User className="h-5 w-5 text-gray-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 max-w-[150px] truncate" title={contact.name}>{contact.name}</div>
+                            <div className="text-sm text-gray-500 flex items-center">
+                              <Mail className="h-4 w-4 mr-1" />
+                              {contact.email}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 font-medium max-w-[400px] truncate" title={contact.subject}>{contact.subject}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        className="text-sm text-white bg-orange-500 hover:bg-orange-600 rounded px-4 py-2 transition-colors duration-200"
-                        onClick={() => setSelectedContact(contact)}
-                      >
-                        Lihat Pesan
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {formatDate(contact.createdAt)}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 font-medium max-w-[400px] truncate" title={contact.subject}>{contact.subject}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          className="text-sm text-white bg-orange-500 hover:bg-orange-600 rounded px-4 py-2 transition-colors duration-200"
+                          onClick={() => setSelectedContact(contact)}
+                        >
+                          Lihat Pesan
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {formatDate(contact.createdAt)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Card List (md ke bawah) */}
+          <div className="md:hidden space-y-4">
+            {contacts.map((contact) => (
+              <div key={contact._id} className="bg-white rounded-lg shadow-md p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="bg-gray-100 rounded-full p-2">
+                    <User className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-base font-semibold text-gray-900 truncate" title={contact.name}>{contact.name}</div>
+                    <div className="text-sm text-gray-500 flex items-center truncate">
+                      <Mail className="h-4 w-4 mr-1" />
+                      {contact.email}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-medium text-gray-500">Subject:</span>
+                  <span className="text-sm text-gray-900 truncate" title={contact.subject}>{contact.subject}</span>
+                </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-medium text-gray-500">Waktu:</span>
+                  <span className="text-sm text-gray-700 flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {formatDate(contact.createdAt)}
+                  </span>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    className="text-sm text-white bg-orange-500 hover:bg-orange-600 rounded px-4 py-2 transition-colors duration-200"
+                    onClick={() => setSelectedContact(contact)}
+                  >
+                    Lihat Pesan
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
       {/* Modal Detail Pesan */}
       {selectedContact && (
@@ -220,10 +256,10 @@ export default function AdminContacts() {
               <X className="h-6 w-6" />
             </button>
             <h2 className="text-xl font-bold mb-4 text-orange-600">Detail Pesan Pengguna</h2>
-            <div className="mb-2 text-gray-800"><b>Nama:</b> {selectedContact.name}</div>
-            <div className="mb-2 text-gray-800"><b>Email:</b> {selectedContact.email}</div>
-            <div className="mb-2 text-gray-800"><b>Subject:</b> {selectedContact.subject}</div>
-            <div className="mb-2 text-gray-800"><b>Pesan:</b>
+            <div className="mb-2 text-gray-800 break-words whitespace-normal max-w-full"><b>Nama:</b> {selectedContact.name}</div>
+            <div className="mb-2 text-gray-800 break-words whitespace-normal max-w-full"><b>Email:</b> <span className="break-all">{selectedContact.email}</span></div>
+            <div className="mb-2 text-gray-800 break-words whitespace-normal max-w-full"><b>Subject:</b> <span className="break-all">{selectedContact.subject}</span></div>
+            <div className="mb-2 text-gray-800 break-words whitespace-normal max-w-full"><b>Pesan:</b>
               <div className="whitespace-pre-wrap break-words bg-gray-100 rounded p-3 max-h-60 overflow-auto border border-orange-200 text-gray-800">
                 {selectedContact.message}
               </div>
