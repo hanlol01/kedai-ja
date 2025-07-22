@@ -1,5 +1,10 @@
 // Enhanced Flowise AI Chatbot Integration with WhatsApp Button
 (function() {
+    // Don't load chatbot overlay on dedicated chatbot page
+    if (window.location.pathname === '/chatbot') {
+      return;
+    }
+  
     // Konfigurasi WhatsApp Admin
     const WHATSAPP_CONFIG = {
       phoneNumber: '6285797954113', // Ganti dengan nomor WhatsApp admin (format: 62xxx)
@@ -520,13 +525,54 @@
       sendMessage(input.value);
     };
   
+    // Function to detect mobile devices
+    function isMobileDevice() {
+      // More comprehensive mobile detection
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      
+      // Check for mobile user agents
+      const mobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      
+      // Check screen width (mobile-first approach) - primary indicator for mobile
+      const smallScreen = window.innerWidth <= 768;
+      
+      // Check for touch capability
+      const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
+      // Check for mobile-specific properties
+      const mobileOrientation = typeof window.orientation !== "undefined";
+      
+      // Mobile if: small screen, OR mobile user agent, OR touch + small screen
+      return mobileUA || smallScreen || (touchDevice && smallScreen) || mobileOrientation;
+    }
+
     // Event handler untuk tombol chatbot
     button.onclick = function() {
-      const isVisible = chatWindow.style.display === 'flex';
-      chatWindow.style.display = isVisible ? 'none' : 'flex';
-      if (!isVisible) {
+      // Check if it's a mobile device
+      console.log('Mobile device detected:', isMobileDevice());
+      console.log('Screen width:', window.innerWidth);
+      console.log('Touch device:', 'ontouchstart' in window);
+      
+      if (isMobileDevice()) {
+        // Open chatbot in new tab for mobile
+        console.log('Opening chatbot in new tab...');
+        const chatbotWindow = window.open('/chatbot', '_blank', 'noopener,noreferrer');
         badge.style.display = 'none';
-        input.focus();
+        
+        // Fallback if popup is blocked
+        if (!chatbotWindow || chatbotWindow.closed || typeof chatbotWindow.closed == 'undefined') {
+          console.log('Popup blocked, redirecting to chatbot page...');
+          window.location.href = '/chatbot';
+        }
+      } else {
+        // Use overlay for desktop
+        console.log('Using overlay for desktop...');
+        const isVisible = chatWindow.style.display === 'flex';
+        chatWindow.style.display = isVisible ? 'none' : 'flex';
+        if (!isVisible) {
+          badge.style.display = 'none';
+          input.focus();
+        }
       }
     };
   
