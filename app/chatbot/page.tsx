@@ -159,17 +159,11 @@ export default function ChatbotPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 shadow-lg">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
               <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
-                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V19C3 20.1 3.9 21 5 21H11V19H5V3H13V9H21Z"/>
+                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z"/>
               </svg>
             </div>
             <div>
@@ -177,6 +171,15 @@ export default function ChatbotPage() {
               <p className="text-sm opacity-90">Online - Siap membantu Anda</p>
             </div>
           </div>
+          <button
+            onClick={() => window.close()}
+            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+            title="Tutup"
+          >
+            <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -248,22 +251,20 @@ export default function ChatbotPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Replies */}
-      {messages.length <= 1 && (
-        <div className="px-4 pb-2">
-          <div className="flex overflow-x-auto gap-2 pb-2">
-            {quickReplies.map((reply, index) => (
-              <button
-                key={index}
-                onClick={() => handleQuickReply(reply)}
-                className="flex-shrink-0 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
-              >
-                {reply}
-              </button>
-            ))}
-          </div>
+      {/* Quick Replies - Always visible */}
+      <div className="px-4 pb-2">
+        <div className="flex overflow-x-auto gap-2 pb-2">
+          {quickReplies.map((reply, index) => (
+            <button
+              key={index}
+              onClick={() => handleQuickReply(reply)}
+              className="flex-shrink-0 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors whitespace-nowrap"
+            >
+              {reply}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Input Area */}
       <div className="bg-white p-4 border-t border-gray-200">
