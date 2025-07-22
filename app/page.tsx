@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, Menu, X, ShoppingCart, Headphones, Utensils, User } from 'lucide-react';
 import Footer from '@/app/admin/components/Footer';
+import AboutUsSection from '@/components/ui/aboutussection';
 
 type MenuItem = {
   _id: string;
@@ -284,6 +285,13 @@ export default function Home() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AboutUsSection />
         </div>
       </section>
 

@@ -99,8 +99,8 @@ export default function AdminSettings() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Pengaturan Restoran</h1>
-        <p className="text-gray-600 mt-2">Kelola informasi dasar restoran</p>
+        <h1 className="text-3xl text-center font-bold text-gray-900">Pengaturan Restoran</h1>
+        <p className="text-gray-600 mt-2 text-center">Kelola informasi dasar restoran</p>
       </div>
 
       {error && (

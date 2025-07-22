@@ -125,41 +125,77 @@ export default function Menu() {
             <p className="text-gray-600">Menu untuk kategori ini akan segera hadir.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((item) => (
-              <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <div className="h-48 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
-                  {item.image ? (
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <ChefHat className="h-16 w-16 text-white" />
-                  )}
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-gray-900">{item.name}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      item.category === 'Makanan' 
-                        ? 'bg-orange-100 text-orange-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {item.category}
-                    </span>
+          <>
+            {/* Mobile: List minimalis */}
+            <div className="block md:hidden">
+              <ul className="space-y-3">
+                {filteredItems.map((item) => (
+                  <li key={item._id} className="bg-white rounded-xl shadow-sm px-3 py-3 border border-gray-100">
+                    {/* Baris atas: gambar, info utama sejajar */}
+                    <div className="flex items-center w-full">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border mr-3">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <ChefHat className="h-8 w-8 text-orange-400 mx-auto my-auto" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row">
+                        <div className="flex-1 min-w-0">
+                          <span className="font-bold text-gray-900 text-base truncate block">{item.name}</span>
+                        </div>
+                        <div className="flex flex-col items-end ml-2 min-w-[90px]">
+                          <span className="text-orange-500 font-bold text-base">{typeof item.price === 'number' ? `Rp ${item.price.toLocaleString('id-ID')}` : ''}</span>
+                          <span className={`text-xs mt-1 px-2 py-0.5 rounded-full font-semibold ${item.category === 'Makanan' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>{item.category}</span>
+                          <span className="text-xs text-green-600 flex items-center mt-0.5"><span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>Tersedia</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Deskripsi di bawah baris atas */}
+                    <div className="mt-1">
+                      <span className="block text-xs text-gray-500 max-w-full whitespace-normal break-words leading-snug">{item.description}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Desktop: Grid */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredItems.map((item) => (
+                <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                  <div className="h-48 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <ChefHat className="h-16 w-16 text-white" />
+                    )}
                   </div>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-orange-500">
-                      Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
-                    </span>
-                    <div className="flex items-center text-green-600">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-sm font-medium">Tersedia</span>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xl font-semibold text-gray-900">{item.name}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        item.category === 'Makanan' 
+                          ? 'bg-orange-100 text-orange-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {item.category}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mb-4">{item.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-orange-500">
+                        Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
+                      </span>
+                      <div className="flex items-center text-green-600">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span className="text-sm font-medium">Tersedia</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
       

@@ -121,8 +121,8 @@ export default function AdminTestimonials() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Testimonials</h1>
-        <p className="text-gray-600 mt-2">Lihat semua testimoni dan rating dari pelanggan</p>
+        <h1 className="text-3xl text-center font-bold text-gray-900">Testimonials</h1>
+        <p className="text-gray-600 mt-2 text-center">Lihat semua testimoni dan rating dari pelanggan</p>
       </div>
 
       {/* Statistics */}
