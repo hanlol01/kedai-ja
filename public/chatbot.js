@@ -554,32 +554,23 @@
     console.log('Touch device:', 'ontouchstart' in window);
     
     if (isMobileDevice()) {
-      // Open chatbot in new tab for mobile - Force new tab using link method
+      // Open chatbot in new tab for mobile - Use only ONE method
       console.log('Opening chatbot in new tab...');
+      badge.style.display = 'none';
       
-      // Method 1: Try direct window.open with user gesture
-      const chatbotWindow = window.open('/chatbot', '_blank', 'noopener,noreferrer,width=400,height=600,location=yes,resizable=yes,scrollbars=yes');
+      // Use the more reliable link method directly
+      const tempLink = document.createElement('a');
+      tempLink.href = '/chatbot';
+      tempLink.target = '_blank';
+      tempLink.rel = 'noopener noreferrer';
+      tempLink.style.display = 'none';
+      document.body.appendChild(tempLink);
       
-      if (chatbotWindow && !chatbotWindow.closed) {
-        console.log('New tab opened successfully');
-        badge.style.display = 'none';
-      } else {
-        // Method 2: Create temporary link and click it 
-        console.log('Direct popup failed, trying link method...');
-        const tempLink = document.createElement('a');
-        tempLink.href = '/chatbot';
-        tempLink.target = '_blank';
-        tempLink.rel = 'noopener noreferrer';
-        tempLink.style.display = 'none';
-        document.body.appendChild(tempLink);
-        
-        // Simulate user click which is more likely to bypass popup blockers
-        tempLink.click();
-        document.body.removeChild(tempLink);
-        
-        console.log('Link method attempted');
-        badge.style.display = 'none';
-      }
+      // Simulate user click which bypasses popup blockers
+      tempLink.click();
+      document.body.removeChild(tempLink);
+      
+      console.log('Chatbot opened in new tab');
     } else {
       // Use overlay for desktop
       console.log('Using overlay for desktop...');
