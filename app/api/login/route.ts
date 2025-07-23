@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
     
-    const { email, password } = await request.json();
+    const { email, password, rememberMe = false } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -33,11 +33,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // Set different expiry times based on remember me
+    const expiryDuration = rememberMe 
+      ? 7 * 24 * 60 * 60 * 1000  // 7 days
+      : 30 * 60 * 1000;          // 30 minutes
+
+    const expires = new Date(Date.now() + expiryDuration);
     const session = await encrypt({ 
       userId: admin._id,
       email: admin.email,
       name: admin.name,
+      rememberMe,
       expires 
     });
 
@@ -48,6 +54,7 @@ export async function POST(request: NextRequest) {
         email: admin.email,
         name: admin.name,
       },
+      rememberMe,
     });
 
     response.cookies.set('token', session, {
