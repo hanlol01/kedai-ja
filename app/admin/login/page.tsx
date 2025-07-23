@@ -40,11 +40,11 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-500 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
-          <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <ChefHat className="h-8 w-8 text-orange-500" />
+          <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <img src="/logo-hitam.jpg" alt="Logo Kedai J.A" className="h-8 w-8" style={{objectFit: 'contain'}} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
           <p className="text-gray-600 mt-2">Masuk ke panel admin Kedai J.A</p>

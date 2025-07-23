@@ -402,7 +402,7 @@ export default function AdminMenu() {
                         <img src={item.image} alt={item.name} className="h-12 w-12 object-cover rounded group-hover:ring-2 group-hover:ring-orange-400 text-black transition" />
                       </button>
                     ) : (
-                      <ChefHat className="h-8 w-8 text-gray-300" />
+                      <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-12 w-12" style={{objectFit: 'contain'}} />
                     )}
                   </td>
                   <td className="px-4 py-2 font-semibold align-middle text-black">{item.name}</td>
@@ -467,7 +467,7 @@ export default function AdminMenu() {
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-t-lg group-hover:ring-2 group-hover:ring-orange-400 transition" />
                 </button>
               ) : (
-                <ChefHat className="h-12 w-12 text-white" />
+                <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-12 w-12" style={{objectFit: 'contain'}} />
               )}
             </div>
             <div className="p-2 flex-1 flex flex-col justify-between">
@@ -519,7 +519,7 @@ export default function AdminMenu() {
 
       {filteredMenuItems.length === 0 && (
         <div className="text-center py-16">
-          <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-16 w-16 text-gray-400 mx-auto mb-4" style={{objectFit: 'contain'}} />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No menu items found</h3>
           <p className="text-gray-600 mb-4">Start by adding your first menu item</p>
           <button

@@ -201,7 +201,7 @@ export default function Footer() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="flex items-center mb-4 md:mb-0">
-                <ChefHat className="h-6 w-6 text-orange-500 mr-2" />
+                <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-6 w-6 mr-2" style={{objectFit: 'contain'}} />
                 <span className="text-lg font-bold">{settings.restaurantName}</span>
               </div>
               

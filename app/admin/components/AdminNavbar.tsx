@@ -37,7 +37,7 @@ export default function AdminNavbar() {
           {/* Logo kiri */}
           <div className="flex items-center flex-shrink-0 mr-6">
             <Link href="/admin/dashboard" className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-500" />
+              <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-8 w-8" style={{objectFit: 'contain'}} />
               <span className="text-xl font-bold text-gray-900">Kedai J.A Admin</span>
             </Link>
           </div>

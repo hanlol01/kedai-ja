@@ -81,7 +81,7 @@ export default function Menu() {
               Kembali ke Home
             </Link>
             <div className="flex items-center">
-              <ChefHat className="h-8 w-8 text-orange-500 mr-2" />
+              <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-8 w-8 mr-2" style={{objectFit: 'contain'}} />
               <span className="text-xl font-bold text-gray-900">Menu Kedai J.A</span>
             </div>
           </div>
