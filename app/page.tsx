@@ -31,31 +31,19 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      setSettings({
-        restaurantName: 'Kedai J.A',
-        description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
-        address: 'Jl. Raya Leles No.45, Garut',
-        contact: '081234567890',
-        hours: 'Senin - Minggu, 09.00 - 21.00',
-        email: 'tes@kedai-ja.com'
-      });
-    }, 10000); // 10 second timeout
-
-    fetchData().finally(() => {
-      clearTimeout(timeoutId);
-    });
-
-    return () => clearTimeout(timeoutId);
+    fetchData();
+    setShowContent(true);
   }, []);
 
   const fetchData = async () => {
     try {
+      setLoading(true);
+      
       // Set timeout for each fetch
-      const fetchWithTimeout = (url: string, timeout = 5000) => {
+      const fetchWithTimeout = (url: string, timeout = 3000) => {
         return Promise.race([
           fetch(url),
           new Promise<Response>((_, reject) => 
@@ -105,7 +93,7 @@ export default function Home() {
         hours: 'Senin - Minggu, 09.00 - 21.00',
         email: 'info@kedai-ja.com'
       });
-      setLoading(false);
+      
     } catch (error) {
       console.error('Error fetching data:', error);
       setBestSellerItems([]);
@@ -117,6 +105,7 @@ export default function Home() {
         hours: 'Senin - Minggu, 09.00 - 21.00',
         email: 'info@kedai-ja.com'
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -140,15 +129,15 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen ${showContent ? 'animate-fadein-down' : 'opacity-0'}`}>
       {/* Navigation */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
+      <nav className="bg-gray-900 text-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-xl font-bold text-gray-900">{settings?.restaurantName}</span>
+                <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-8 w-8" style={{objectFit: 'contain'}} />
+                <span className="text-xl font-bold text-white">{settings?.restaurantName}</span>
               </Link>
             </div>
 
@@ -158,7 +147,7 @@ export default function Home() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-gray-700 hover:text-orange-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                    className="text-gray-300 hover:text-orange-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                   >
                     {item.name}
                   </Link>
@@ -169,7 +158,7 @@ export default function Home() {
             <div className="md:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-orange-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-orange-400 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500"
               >
                 {isMenuOpen ? (
                   <X className="block h-6 w-6" />
@@ -187,7 +176,7 @@ export default function Home() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-gray-700 hover:text-orange-500 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    className="text-gray-300 hover:text-orange-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.name}
@@ -200,30 +189,45 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-orange-400 via-red-400 to-yellow-400 text-white py-20">
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        className="relative bg-gradient-to-br from-orange-400 via-red-400 to-yellow-400 text-white py-2 min-h-[320px] md:py-20 md:min-h-[400px] flex items-start justify-center"
+        style={{
+          backgroundImage: "url('/hero-bg(3).jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 mt-0 md:mt-0 w-full">
           <div className="text-center">
             <div className="mb-8">
-              <ChefHat className="h-16 w-16 mx-auto mb-4 text-white" />
+              <img
+                src="/logo-bg.png"
+                alt="Logo Kedai J.A"
+                className="h-20 w-20 mx-auto mb-6 drop-shadow-lg"
+                style={{objectFit: 'contain'}}
+              />
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Selamat Datang di {settings?.restaurantName}
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 drop-shadow-2xl tracking-tight leading-tight" style={{textShadow: '1px 1px 6px rgba(0,0,0,0.3)'}}>
+              Selamat Datang di <span className="text-yellow-200">Kedai J.A</span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+            <p className="text-2xl md:text-3xl mb-8 max-w-4xl mx-auto font-medium leading-relaxed drop-shadow-lg text-gray-100" style={{textShadow: '1px 1px 6px rgba(0,0,0,0.3)'}}>
               {settings?.description}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
                 href="/menu"
-                className="bg-white text-orange-500 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
+                className="w-56 px-0 py-4 rounded-xl font-bold text-lg border-2 border-white/90 bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-orange-600 hover:shadow-2xl hover:scale-105 transition-all duration-300 shadow-xl flex items-center justify-center"
+                style={{textShadow: '1px 1px 6px rgba(0,0,0,0.3)'}}
               >
                 Lihat Menu
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-3 h-6 w-6" />
               </Link>
               <Link
                 href="/contact"
-                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-orange-500 transition-colors duration-200"
+                className="w-56 px-0 py-4 rounded-xl font-bold text-lg border-2 border-white/90 bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-orange-600 hover:shadow-2xl hover:scale-105 transition-all duration-300 shadow-xl flex items-center justify-center"
+                style={{textShadow: '1px 1px 6px rgba(0,0,0,0.3)'}}
               >
                 Hubungi Kami
               </Link>

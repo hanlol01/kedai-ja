@@ -90,7 +90,7 @@ export default function ChatbotPage() {
     const shouldShowWhatsApp = containsOrderKeywords(message);
 
     try {
-      const response = await fetch('https://cloud.flowiseai.com/api/v1/prediction/d9109871-f497-4f26-b155-e4d24d3f675a', {
+      const response = await fetch('https://cloud.flowiseai.com/api/v1/prediction/8ddd31a1-3d18-432d-bf8e-ac2576c85b73', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: message })
