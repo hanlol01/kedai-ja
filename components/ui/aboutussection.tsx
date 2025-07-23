@@ -113,7 +113,7 @@ export default function AboutUsSection() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
       {/* Title Section (pindah ke atas gambar) */}
-      <div className="mb-4 md:mb-0 col-span-1 lg:col-span-2">
+      <div className="mb-4 md:mb-0 col-span-1 lg:col-span-2" data-aos="fade-up">
         <p className="text-orange-500 font-semibold text-lg mb-2 italic text-center">
           {aboutUs.title}
         </p>
@@ -122,7 +122,7 @@ export default function AboutUsSection() {
         </h2>
       </div>
       {/* Left Side - Images Grid/Slider */}
-      <div>
+      <div data-aos="fade-right" data-aos-delay="200">
         {/* Mobile: Slider */}
         <div className="block md:hidden">
           {images.length > 0 ? (
@@ -203,7 +203,7 @@ export default function AboutUsSection() {
         </div>
       </div>
       {/* Right Side - Content */}
-      <div className="space-y-6">
+      <div className="space-y-6" data-aos="fade-left" data-aos-delay="300">
         {/* Description */}
         <div className="space-y-4">
           <p className="text-gray-600 leading-relaxed text-justify">
@@ -215,7 +215,7 @@ export default function AboutUsSection() {
         </div>
 
         {/* Statistics */}
-        <div className="flex items-center space-x-8 py-6">
+        <div className="flex items-center space-x-8 py-6" data-aos="fade-up" data-aos-delay="400">
           <div className="flex items-center space-x-3">
             <div className="text-4xl font-bold text-orange-500 border-l-4 border-orange-500 pl-4">
               {aboutUs.yearsOfExperience}
@@ -238,7 +238,7 @@ export default function AboutUsSection() {
         </div>
 
         {/* Read More Button */}
-        <div className="flex md:block justify-center md:justify-start">
+        <div className="flex md:block justify-center md:justify-start" data-aos="fade-up" data-aos-delay="500">
           <Link href="/about">
             <button className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors duration-200 uppercase tracking-wide flex items-center gap-2">
               Lihat Selengkapnya
