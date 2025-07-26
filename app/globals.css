@@ -25,3 +25,7 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+#kedaija-chatbot-window input[type="text"] {
+  color: #475569 !important;
+}

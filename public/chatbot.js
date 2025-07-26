@@ -11,13 +11,6 @@
     defaultMessage: 'Halo, saya ingin bertanya tentang pemesanan di Kedai J.A'
   };
 
-  // Keywords yang akan memicu munculnya tombol WhatsApp
-  const ORDER_KEYWORDS = [
-    'pesan', 'order', 'pemesanan', 'cara pesan', 'bagaimana pesan', 
-    'mau pesan', 'ingin pesan', 'booking', 'reservasi', 'delivery',
-    'takeaway', 'bungkus', 'antar', 'kirim', 'hubungi admin'
-  ];
-
   // Fungsi untuk format waktu
   function formatTime() {
     const now = new Date();
@@ -36,12 +29,6 @@
     "Cara pemesanan",
     "Hubungi admin"
   ];
-
-  // Fungsi untuk mengecek apakah pesan mengandung keyword pemesanan
-  function containsOrderKeywords(message) {
-    const lowerMessage = message.toLowerCase();
-    return ORDER_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
-  }
 
   // Fungsi untuk membuat tombol WhatsApp
   function createWhatsAppButton() {
@@ -322,7 +309,7 @@
     msgContainer.style.alignItems = 'flex-start';
     msgContainer.style.gap = '8px';
     msgContainer.style.marginBottom = '4px';
-
+  
     const avatar = document.createElement('div');
     avatar.style.width = '32px';
     avatar.style.height = '32px';
@@ -337,10 +324,10 @@
         <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z"/>
       </svg>
     `;
-
+  
     const msgContent = document.createElement('div');
     msgContent.style.flex = '1';
-
+  
     const msgBubble = document.createElement('div');
     msgBubble.style.background = 'white';
     msgBubble.style.padding = '12px 16px';
@@ -351,28 +338,29 @@
     msgBubble.style.color = '#374151';
     msgBubble.style.whiteSpace = 'pre-wrap';
     msgBubble.textContent = text;
-
+  
     const timeStamp = document.createElement('div');
     timeStamp.style.fontSize = '11px';
     timeStamp.style.color = '#9CA3AF';
     timeStamp.style.marginTop = '4px';
     timeStamp.style.marginLeft = '4px';
     timeStamp.textContent = formatTime();
-
+  
     msgContent.appendChild(msgBubble);
     msgContent.appendChild(timeStamp);
-
+  
     // Tambahkan tombol WhatsApp jika diperlukan
     if (showWhatsAppButton) {
       const whatsappButton = createWhatsAppButton();
       msgContent.appendChild(whatsappButton);
     }
-
+  
     msgContainer.appendChild(avatar);
     msgContainer.appendChild(msgContent);
-
+  
     return msgContainer;
   }
+  
 
   // Fungsi untuk membuat pesan user
   function createUserMessage(text) {
@@ -440,16 +428,13 @@
     // Clear input
     input.value = '';
 
-    // Cek apakah pesan mengandung keyword pemesanan
-    const shouldShowWhatsApp = containsOrderKeywords(message);
-
     // Tampilkan typing indicator
     const typingIndicator = createTypingIndicator();
     chatArea.appendChild(typingIndicator);
     chatArea.scrollTop = chatArea.scrollHeight;
 
     // Fetch ke API Flowise
-    fetch('https://cloud.flowiseai.com/api/v1/prediction/8ddd31a1-3d18-432d-bf8e-ac2576c85b73', {
+    fetch('https://cloud.flowiseai.com/api/v1/prediction/e5cb30ac-9646-4d97-8a86-3feb17d35f0d', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: message })
@@ -460,9 +445,10 @@
       chatArea.removeChild(typingIndicator);
       
       // Tampilkan balasan bot dengan atau tanpa tombol WhatsApp
+      const showWA = /whatsapp|hubungi admin|klik tombol di bawah/i.test(data.text || '');
       const botMsg = createBotMessage(
         data.text || 'Maaf, saya tidak dapat memproses permintaan Anda saat ini. Silakan coba lagi.',
-        shouldShowWhatsApp
+        showWA
       );
       chatArea.appendChild(botMsg);
       chatArea.scrollTop = chatArea.scrollHeight;
