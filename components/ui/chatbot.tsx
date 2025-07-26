@@ -40,7 +40,7 @@ export default function Chatbot() {
             </button>
             {/* BubbleChat dari Flowise */}
             <BubbleChat
-              chatflowid="d9109871-f497-4f26-b155-e4d24d3f675a"
+              chatflowid="8ddd31a1-3d18-432d-bf8e-ac2576c85b73"
               apiHost="https://cloud.flowiseai.com"
               welcomeMessage="Halo! Saya asisten virtual Kedai J.A. Ada yang bisa saya bantu hari ini?"
             />
