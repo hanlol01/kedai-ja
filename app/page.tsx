@@ -302,7 +302,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-white transition">24/7 Service</h3>
               <p className="text-gray-600 group-hover:text-orange-100 transition">
-                Kami siap mendengarkan anda, hubungi kami melalui tombol Chatbot di bawah ini.
+                Kami siap mendengarkan anda, hubungi kami melalui kontak yang tersedia.
               </p>
             </div>
           </div>

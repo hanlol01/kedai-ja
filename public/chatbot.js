@@ -1,623 +1,1142 @@
-// Enhanced Flowise AI Chatbot Integration with WhatsApp Button
 (function() {
-  // Don't load chatbot overlay on dedicated chatbot page
-  if (window.location.pathname === '/chatbot') {
-    return;
-  }
+    'use strict';
 
-  // Konfigurasi WhatsApp Admin
-  const WHATSAPP_CONFIG = {
-    phoneNumber: '6285797954113', // Ganti dengan nomor WhatsApp admin (format: 62xxx)
-    defaultMessage: 'Halo, saya ingin bertanya tentang pemesanan di Kedai J.A'
-  };
 
-  // Fungsi untuk format waktu
-  function formatTime() {
-    const now = new Date();
-    return now.toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  }
+    // Configuration
+    const CONFIG = {
+        FLOWISE_API: 'https://cloud.flowiseai.com/api/v1/prediction/8ddd31a1-3d18-432d-bf8e-ac2576c85b73',
+        WHATSAPP_NUMBER: '6285797954113',
+        WHATSAPP_MESSAGE: 'Halo, saya ingin bertanya tentang pemesanan di Kedai J.A',
+        WELCOME_MESSAGE: `Halo! Selamat datang di Kedai J.A 👋
 
-  // Quick reply options
-  const quickReplies = [
-    "Lihat menu makanan",
-    "Lihat menu minuman", 
-    "Jam buka restoran",
-    "Lokasi restoran",
-    "Cara pemesanan",
-    "Hubungi admin"
-  ];
-
-  // Fungsi untuk membuat tombol WhatsApp
-  function createWhatsAppButton() {
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.marginTop = '12px';
-    buttonContainer.style.display = 'flex';
-    buttonContainer.style.justifyContent = 'flex-start';
-
-    const whatsappBtn = document.createElement('a');
-    whatsappBtn.href = `https://wa.me/${WHATSAPP_CONFIG.phoneNumber}?text=${encodeURIComponent(WHATSAPP_CONFIG.defaultMessage)}`;
-    whatsappBtn.target = '_blank';
-    whatsappBtn.style.display = 'inline-flex';
-    whatsappBtn.style.alignItems = 'center';
-    whatsappBtn.style.gap = '8px';
-    whatsappBtn.style.background = '#25D366';
-    whatsappBtn.style.color = 'white';
-    whatsappBtn.style.padding = '10px 16px';
-    whatsappBtn.style.borderRadius = '20px';
-    whatsappBtn.style.textDecoration = 'none';
-    whatsappBtn.style.fontSize = '13px';
-    whatsappBtn.style.fontWeight = '600';
-    whatsappBtn.style.transition = 'all 0.2s ease';
-    whatsappBtn.style.boxShadow = '0 2px 4px rgba(37, 211, 102, 0.2)';
-
-    // WhatsApp Icon SVG
-    whatsappBtn.innerHTML = `
-      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-      </svg>
-      Hubungi Admin WhatsApp
-    `;
-
-    whatsappBtn.onmouseover = function() {
-      whatsappBtn.style.background = '#128C7E';
-      whatsappBtn.style.transform = 'translateY(-1px)';
-      whatsappBtn.style.boxShadow = '0 4px 8px rgba(37, 211, 102, 0.3)';
+Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan pemesanan. Silakan pilih topik di bawah atau ketik pertanyaan Anda!`,
+        QUICK_REPLIES: [
+            'Lihat menu Kedai J.A',
+            'Jam operasional kami',
+            'Lokasi kami',
+            'Cara pemesanan',
+            'Hubungi admin'
+        ]
     };
 
-    whatsappBtn.onmouseout = function() {
-      whatsappBtn.style.background = '#25D366';
-      whatsappBtn.style.transform = 'translateY(0)';
-      whatsappBtn.style.boxShadow = '0 2px 4px rgba(37, 211, 102, 0.2)';
+    // Global variables
+    let isOpen = false;
+    let messageId = 0;
+
+    // Inject CSS styles
+    const injectStyles = () => {
+        const css = `
+            /* Chatbot Styles */
+            .chatbot-container * {
+                box-sizing: border-box;
+                font-family: system-ui, -apple-system, sans-serif;
+            }
+
+            .chatbot-button {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #F97316, #EA580C);
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+            }
+
+            .chatbot-button:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 25px rgba(249, 115, 22, 0.5);
+            }
+
+            .chatbot-button svg {
+                width: 24px;
+                height: 24px;
+                fill: white;
+            }
+
+            .chatbot-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                width: 20px;
+                height: 20px;
+                background: #EF4444;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+                color: white;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+
+            .chatbot-window {
+                position: fixed;
+                bottom: 90px;
+                right: 20px;
+                width: 380px;
+                height: 550px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+                z-index: 1001;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+                animation: slideIn 0.3s ease-out;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .chatbot-header {
+                background: linear-gradient(135deg, #F97316, #EA580C);
+                color: white;
+                padding: 16px 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .chatbot-header-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .chatbot-avatar {
+                width: 36px;
+                height: 36px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .chatbot-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+            }
+
+            .chatbot-avatar svg {
+                width: 20px;
+                height: 20px;
+                fill: white;
+            }
+
+            .chatbot-title {
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0;
+            }
+
+            .chatbot-close {
+                background: none;
+                border: none;
+                color: white;
+                cursor: pointer;
+                padding: 4px;
+                border-radius: 4px;
+                transition: background 0.2s ease;
+            }
+
+            .chatbot-close:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .chatbot-close svg {
+                width: 20px;
+                height: 20px;
+                fill: currentColor;
+            }
+
+            .chatbot-messages {
+                flex: 1;
+                padding: 16px;
+                overflow-y: auto;
+                background: #F8FAFC;
+                scrollbar-width: thin;
+                scrollbar-color: #CBD5E1 transparent;
+            }
+
+            .chatbot-messages::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .chatbot-messages::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .chatbot-messages::-webkit-scrollbar-thumb {
+                background: #CBD5E1;
+                border-radius: 3px;
+            }
+
+            .chatbot-message {
+                margin-bottom: 16px;
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .chatbot-message.user {
+                flex-direction: row-reverse;
+            }
+
+            .chatbot-message-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+
+            .chatbot-message.bot .chatbot-message-avatar {
+                background: #F97316;
+                overflow: hidden;
+            }
+
+            .chatbot-message.bot .chatbot-message-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+            }
+
+            .chatbot-message.user .chatbot-message-avatar {
+                background: #64748B;
+            }
+
+            .chatbot-message-avatar svg {
+                width: 16px;
+                height: 16px;
+                fill: white;
+            }
+
+            .chatbot-message-content {
+                max-width: 75%;
+                padding: 12px 16px;
+                border-radius: 16px;
+                font-size: 14px;
+                line-height: 1.4;
+                position: relative;
+            }
+
+            .chatbot-message.bot .chatbot-message-content {
+                background: white;
+                border-bottom-left-radius: 4px;
+                color: #1F2937;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            .chatbot-message.user .chatbot-message-content {
+                background: #F97316;
+                border-bottom-right-radius: 4px;
+                color: white;
+            }
+
+            .chatbot-message-time {
+                font-size: 11px;
+                opacity: 0.7;
+                margin-top: 4px;
+            }
+
+            .chatbot-typing {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+
+            .chatbot-typing-dots {
+                display: flex;
+                gap: 4px;
+                padding: 12px 16px;
+                background: white;
+                border-radius: 16px;
+                border-bottom-left-radius: 4px;
+            }
+
+            .chatbot-typing-dot {
+                width: 6px;
+                height: 6px;
+                background: #94A3B8;
+                border-radius: 50%;
+                animation: typing 1.4s infinite ease-in-out;
+            }
+
+            .chatbot-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+            .chatbot-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+            @keyframes typing {
+                0%, 80%, 100% {
+                    transform: scale(0);
+                    opacity: 0.5;
+                }
+                40% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+
+            .chatbot-quick-replies {
+                padding: 12px;
+                border-top: 1px solid #E2E8F0;
+                position: relative;
+            }
+
+            .chatbot-input-container {
+                padding: 12px;
+                border-top: 1px solid #E2E8F0;
+                display: flex;
+                gap: 8px;
+                background: white;
+            }
+
+            .chatbot-input {
+                flex: 1;
+                border: 1px solid #E2E8F0;
+                border-radius: 18px;
+                padding: 8px 14px;
+                font-size: 13px;
+                outline: none;
+                transition: border-color 0.2s ease;
+                color: #1F2937;
+                background: white;
+            }
+
+            .chatbot-input:focus {
+                border-color: #F97316;
+            }
+
+            .chatbot-input::placeholder {
+                color: #9CA3AF;
+                opacity: 1;
+            }
+
+            .chatbot-send {
+                width: 36px;
+                height: 36px;
+                background: #F97316;
+                border: none;
+                border-radius: 50%;
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .chatbot-send:hover {
+                background: #EA580C;
+                transform: scale(1.05);
+            }
+
+            .chatbot-send:disabled {
+                background: #CBD5E1;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .chatbot-send svg {
+                width: 14px;
+                height: 14px;
+                fill: currentColor;
+            }
+
+            .chatbot-whatsapp-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #25D366;
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 8px 12px;
+                font-size: 12px;
+                cursor: pointer;
+                margin-top: 8px;
+                transition: all 0.2s ease;
+                text-decoration: none;
+            }
+
+            .chatbot-whatsapp-btn:hover {
+                background: #128C7E;
+                transform: scale(1.05);
+            }
+
+            .chatbot-whatsapp-btn svg {
+                width: 14px;
+                height: 14px;
+                fill: currentColor;
+            }
+
+            .chatbot-menu-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background:rgb(124, 165, 0);
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 8px 12px;
+                font-size: 12px;
+                cursor: pointer;
+                margin-top: 8px;
+                transition: all 0.2s ease;
+                text-decoration: none;
+            }
+
+            .chatbot-menu-btn:hover {
+                background:rgb(124, 165, 0);
+                transform: scale(1.05);
+                box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+            }
+
+            .chatbot-menu-btn svg {
+                width: 14px;
+                height: 14px;
+                fill: currentColor;
+            }
+
+            .chatbot-location-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #4285F4;
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 8px 16px;
+                font-size: 13px;
+                cursor: pointer;
+                margin-top: 8px;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .chatbot-location-btn:hover {
+                background: #3367D6;
+                transform: scale(1.05);
+                box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+            }
+
+            .chatbot-location-btn svg {
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+            }
+
+            @media (max-width: 480px) {
+                .chatbot-window {
+                    width: calc(100vw - 40px);
+                    right: 20px;
+                    left: 20px;
+                }
+            }
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
     };
 
-    buttonContainer.appendChild(whatsappBtn);
-    return buttonContainer;
-  }
-
-  // Tombol Chatbot
-  const button = document.createElement('div');
-  button.id = 'kedaija-chatbot-button';
-  button.style.position = 'fixed';
-  button.style.bottom = '20px';
-  button.style.right = '20px';
-  button.style.width = '60px';
-  button.style.height = '60px';
-  button.style.backgroundColor = '#F97316';
-  button.style.borderRadius = '50%';
-  button.style.display = 'flex';
-  button.style.alignItems = 'center';
-  button.style.justifyContent = 'center';
-  button.style.cursor = 'pointer';
-  button.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-  button.style.zIndex = '9999';
-  button.style.transition = 'all 0.3s ease';
-  
-  // Badge notifikasi
-  const badge = document.createElement('div');
-  badge.style.position = 'absolute';
-  badge.style.top = '-5px';
-  badge.style.right = '-5px';
-  badge.style.width = '20px';
-  badge.style.height = '20px';
-  badge.style.backgroundColor = '#EF4444';
-  badge.style.borderRadius = '50%';
-  badge.style.display = 'none';
-  badge.style.alignItems = 'center';
-  badge.style.justifyContent = 'center';
-  badge.style.fontSize = '12px';
-  badge.style.color = 'white';
-  badge.style.fontWeight = 'bold';
-  badge.textContent = '1';
-  
-  button.innerHTML = `
-    <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
-      <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-    </svg>
-  `;
-  
-  button.appendChild(badge);
-  button.onmouseover = function() { button.style.transform = 'scale(1.1)'; };
-  button.onmouseout = function() { button.style.transform = 'scale(1)'; };
-
-  // Window Chatbot
-  const chatWindow = document.createElement('div');
-  chatWindow.id = 'kedaija-chatbot-window';
-  chatWindow.style.position = 'fixed';
-  chatWindow.style.bottom = '90px';
-  chatWindow.style.right = '20px';
-  chatWindow.style.width = '380px';
-  chatWindow.style.height = '550px';
-  chatWindow.style.background = '#fff';
-  chatWindow.style.borderRadius = '16px';
-  chatWindow.style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)';
-  chatWindow.style.zIndex = '1001';
-  chatWindow.style.display = 'none';
-  chatWindow.style.overflow = 'hidden';
-  chatWindow.style.flexDirection = 'column';
-  chatWindow.style.fontFamily = 'system-ui, -apple-system, sans-serif';
-
-  // Header chatbot
-  const header = document.createElement('div');
-  header.style.background = 'linear-gradient(135deg, #F97316, #EA580C)';
-  header.style.color = 'white';
-  header.style.padding = '16px 20px';
-  header.style.display = 'flex';
-  header.style.alignItems = 'center';
-  header.style.justifyContent = 'space-between';
-  header.innerHTML = `
-    <div style="display: flex; align-items: center;">
-      <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
-          <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V19C3 20.1 3.9 21 5 21H11V19H5V3H13V9H21Z"/>
-        </svg>
-      </div>
-      <div>
-        <div style="font-weight: 600; font-size: 16px;">Kedai J.A Assistant</div>
-        <div style="font-size: 12px; opacity: 0.9;">Online - Siap membantu Anda</div>
-      </div>
-    </div>
-  `;
-
-  // Tombol Tutup
-  const closeBtn = document.createElement('button');
-  closeBtn.innerHTML = `
-    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
-      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-    </svg>
-  `;
-  closeBtn.style.background = 'rgba(255,255,255,0.2)';
-  closeBtn.style.border = 'none';
-  closeBtn.style.borderRadius = '8px';
-  closeBtn.style.width = '32px';
-  closeBtn.style.height = '32px';
-  closeBtn.style.cursor = 'pointer';
-  closeBtn.style.display = 'flex';
-  closeBtn.style.alignItems = 'center';
-  closeBtn.style.justifyContent = 'center';
-  closeBtn.style.transition = 'background 0.2s';
-  closeBtn.onmouseover = function() { closeBtn.style.background = 'rgba(255,255,255,0.3)'; };
-  closeBtn.onmouseout = function() { closeBtn.style.background = 'rgba(255,255,255,0.2)'; };
-  closeBtn.onclick = function() { 
-    chatWindow.style.display = 'none';
-    badge.style.display = 'none';
-  };
-  
-  header.appendChild(closeBtn);
-
-  // Area chat
-  const chatArea = document.createElement('div');
-  chatArea.style.flex = '1';
-  chatArea.style.padding = '16px';
-  chatArea.style.overflowY = 'auto';
-  chatArea.style.background = '#F8FAFC';
-  chatArea.style.display = 'flex';
-  chatArea.style.flexDirection = 'column';
-  chatArea.style.gap = '12px';
-
-  // Pesan selamat datang
-  const welcomeMsg = createBotMessage("Halo! Selamat datang di Kedai J.A 👋\n\nSaya siap membantu Anda dengan informasi menu, jam buka, lokasi, dan pemesanan. Silakan pilih topik di bawah atau ketik pertanyaan Anda!");
-  chatArea.appendChild(welcomeMsg);
-
-  // Quick replies container
-  const quickRepliesContainer = document.createElement('div');
-  quickRepliesContainer.style.padding = '0 0 12px 0';
-  quickRepliesContainer.style.background = '#F8FAFC';
-  quickRepliesContainer.style.overflowX = 'auto';
-  quickRepliesContainer.style.overflowY = 'hidden';
-  
-  // Scrollable container untuk buttons
-  const scrollContainer = document.createElement('div');
-  scrollContainer.style.display = 'flex';
-  scrollContainer.style.gap = '8px';
-  scrollContainer.style.padding = '0 16px';
-  scrollContainer.style.minWidth = 'max-content';
-  scrollContainer.style.scrollBehavior = 'smooth';
-
-  // Buat quick reply buttons
-  quickReplies.forEach(reply => {
-    const btn = document.createElement('button');
-    btn.textContent = reply;
-    btn.style.background = 'white';
-    btn.style.border = '1px solid #E2E8F0';
-    btn.style.borderRadius = '20px';
-    btn.style.padding = '8px 16px';
-    btn.style.fontSize = '13px';
-    btn.style.cursor = 'pointer';
-    btn.style.transition = 'all 0.2s';
-    btn.style.color = '#475569';
-    btn.style.fontWeight = '500';
-    btn.style.whiteSpace = 'nowrap';
-    btn.style.flexShrink = '0';
-    
-    btn.onmouseover = function() {
-      btn.style.background = '#F97316';
-      btn.style.color = 'white';
-      btn.style.borderColor = '#F97316';
+    // Icons and Images Configuration
+    const icons = {
+        chat: `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`,
+        close: `<svg viewBox="0 0 24 24"><path d="M18.3 5.71L12 12.01l-6.3-6.3-1.42 1.42L10.59 13.42l-6.3 6.3 1.42 1.42L12 14.84l6.3 6.3 1.42-1.42L13.41 13.42l6.3-6.3z"/></svg>`,
+        bot: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`,
+        user: `<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`,
+        send: `<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`,
+        whatsapp: `<svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.25 7.24c-.22-.63-1.26-1.16-1.26-1.16s-.93-.39-1.08-.44c-.16-.05-.27-.05-.38.05-.11.11-.44.55-.54.66-.09.11-.18.12-.33.06-.16-.06-.67-.25-1.28-.79-.47-.42-.79-.94-.88-1.1-.09-.16-.01-.25.07-.33.07-.07.16-.18.24-.27.08-.09.11-.16.16-.27.05-.11.03-.21-.02-.29-.05-.09-.38-.93-.52-1.27-.14-.33-.28-.28-.38-.29-.1-.01-.21-.01-.32-.01s-.29.04-.44.21c-.16.17-.6.59-.6 1.44s.61 1.67.7 1.78c.08.11 1.18 1.8 2.87 2.53.4.17.72.28 1.96.28 1.24-.01 2.13-.42 2.48-.7.35-.28.57-.67.57-1.24 0-.57-.04-.98-.26-1.61z"/></svg>`
     };
-    btn.onmouseout = function() {
-      btn.style.background = 'white';
-      btn.style.color = '#475569';
-      btn.style.borderColor = '#E2E8F0';
+
+    // Logo configuration - you can change this to your logo path
+    const LOGO_CONFIG = {
+        // Use your logo from public folder
+        botAvatar: '/logo-hitam.jpg', // Change this to your logo path
+        // Alternative: use logo-bg.png or hero-bg.jpg
+        // botAvatar: '/logo-bg.png',
+        // botAvatar: '/hero-bg.jpg',
+        fallbackIcon: icons.bot // Fallback if image fails to load
     };
-    
-    btn.onclick = function() {
-      sendMessage(reply);
+
+    // Create chatbot elements
+    const createChatbot = () => {
+        const container = document.createElement('div');
+        container.className = 'chatbot-container';
+        container.innerHTML = `
+            <button class="chatbot-button" id="chatbot-toggle">
+                ${icons.chat}
+                <span class="chatbot-badge" id="chatbot-badge" style="display: none;">!</span>
+            </button>
+            
+            <div class="chatbot-window" id="chatbot-window">
+                <div class="chatbot-header">
+                    <div class="chatbot-header-content">
+                        <div class="chatbot-avatar">
+                            <img src="${LOGO_CONFIG.botAvatar}" alt="Kedai J.A" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div style="display: none;">${LOGO_CONFIG.fallbackIcon}</div>
+                        </div>
+                        <h3 class="chatbot-title">Kedai J.A Assistant</h3>
+                    </div>
+                    <button class="chatbot-close" id="chatbot-close">
+                        ${icons.close}
+                    </button>
+                </div>
+                
+                <div class="chatbot-messages" id="chatbot-messages"></div>
+                
+                <div class="chatbot-quick-replies" id="chatbot-quick-replies">
+                    <!-- Quick replies will be created dynamically -->
+                </div>
+                
+                <div class="chatbot-input-container">
+                    <input type="text" class="chatbot-input" id="chatbot-input" placeholder="Ketik pesan Anda..." maxlength="500">
+                    <button class="chatbot-send" id="chatbot-send">
+                        ${icons.send}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+        
+        // Create quick replies after container is added to DOM
+        createQuickReplies();
+        
+        return container;
     };
-    
-    scrollContainer.appendChild(btn);
-  });
-  
-  quickRepliesContainer.appendChild(scrollContainer);
 
-  // Form input
-  const inputContainer = document.createElement('div');
-  inputContainer.style.padding = '16px';
-  inputContainer.style.background = 'white';
-  inputContainer.style.borderTop = '1px solid #E2E8F0';
+    // Create quick replies with scroll functionality
+    const createQuickReplies = () => {
+        const quickRepliesContainer = document.getElementById('chatbot-quick-replies');
+        if (!quickRepliesContainer) return;
 
-  const form = document.createElement('form');
-  form.style.display = 'flex';
-  form.style.gap = '8px';
-  form.style.alignItems = 'center';
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'Ketik pesan Anda...';
-  input.style.flex = '1';
-  input.style.padding = '12px 16px';
-  input.style.border = '1px solid #E2E8F0';
-  input.style.borderRadius = '24px';
-  input.style.fontSize = '14px';
-  input.style.outline = 'none';
-  input.style.transition = 'border-color 0.2s';
-  
-  input.onfocus = function() { input.style.borderColor = '#F97316'; };
-  input.onblur = function() { input.style.borderColor = '#E2E8F0'; };
-
-  const sendBtn = document.createElement('button');
-  sendBtn.type = 'submit';
-  sendBtn.style.background = '#F97316';
-  sendBtn.style.border = 'none';
-  sendBtn.style.borderRadius = '50%';
-  sendBtn.style.width = '44px';
-  sendBtn.style.height = '44px';
-  sendBtn.style.cursor = 'pointer';
-  sendBtn.style.display = 'flex';
-  sendBtn.style.alignItems = 'center';
-  sendBtn.style.justifyContent = 'center';
-  sendBtn.style.transition = 'background 0.2s';
-  sendBtn.innerHTML = `
-    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-    </svg>
-  `;
-  
-  sendBtn.onmouseover = function() { sendBtn.style.background = '#EA580C'; };
-  sendBtn.onmouseout = function() { sendBtn.style.background = '#F97316'; };
-
-  form.appendChild(input);
-  form.appendChild(sendBtn);
-  inputContainer.appendChild(form);
-
-  // Fungsi untuk membuat pesan bot
-  function createBotMessage(text, showWhatsAppButton = false) {
-    const msgContainer = document.createElement('div');
-    msgContainer.style.display = 'flex';
-    msgContainer.style.alignItems = 'flex-start';
-    msgContainer.style.gap = '8px';
-    msgContainer.style.marginBottom = '4px';
-  
-    const avatar = document.createElement('div');
-    avatar.style.width = '32px';
-    avatar.style.height = '32px';
-    avatar.style.background = '#F97316';
-    avatar.style.borderRadius = '50%';
-    avatar.style.display = 'flex';
-    avatar.style.alignItems = 'center';
-    avatar.style.justifyContent = 'center';
-    avatar.style.flexShrink = '0';
-    avatar.innerHTML = `
-      <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
-        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z"/>
-      </svg>
-    `;
-  
-    const msgContent = document.createElement('div');
-    msgContent.style.flex = '1';
-  
-    const msgBubble = document.createElement('div');
-    msgBubble.style.background = 'white';
-    msgBubble.style.padding = '12px 16px';
-    msgBubble.style.borderRadius = '18px 18px 18px 4px';
-    msgBubble.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-    msgBubble.style.fontSize = '14px';
-    msgBubble.style.lineHeight = '1.4';
-    msgBubble.style.color = '#374151';
-    msgBubble.style.whiteSpace = 'pre-wrap';
-    msgBubble.textContent = text;
-  
-    const timeStamp = document.createElement('div');
-    timeStamp.style.fontSize = '11px';
-    timeStamp.style.color = '#9CA3AF';
-    timeStamp.style.marginTop = '4px';
-    timeStamp.style.marginLeft = '4px';
-    timeStamp.textContent = formatTime();
-  
-    msgContent.appendChild(msgBubble);
-    msgContent.appendChild(timeStamp);
-  
-    // Tambahkan tombol WhatsApp jika diperlukan
-    if (showWhatsAppButton) {
-      const whatsappButton = createWhatsAppButton();
-      msgContent.appendChild(whatsappButton);
-    }
-  
-    msgContainer.appendChild(avatar);
-    msgContainer.appendChild(msgContent);
-  
-    return msgContainer;
-  }
-  
-
-  // Fungsi untuk membuat pesan user
-  function createUserMessage(text) {
-    const msgContainer = document.createElement('div');
-    msgContainer.style.display = 'flex';
-    msgContainer.style.alignItems = 'flex-start';
-    msgContainer.style.gap = '8px';
-    msgContainer.style.marginBottom = '4px';
-    msgContainer.style.flexDirection = 'row-reverse';
-
-    const avatar = document.createElement('div');
-    avatar.style.width = '32px';
-    avatar.style.height = '32px';
-    avatar.style.background = '#6B7280';
-    avatar.style.borderRadius = '50%';
-    avatar.style.display = 'flex';
-    avatar.style.alignItems = 'center';
-    avatar.style.justifyContent = 'center';
-    avatar.style.flexShrink = '0';
-    avatar.innerHTML = `
-      <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
-        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-      </svg>
-    `;
-
-    const msgContent = document.createElement('div');
-    msgContent.style.flex = '1';
-    msgContent.style.textAlign = 'right';
-
-    const msgBubble = document.createElement('div');
-    msgBubble.style.background = '#F97316';
-    msgBubble.style.color = 'white';
-    msgBubble.style.padding = '12px 16px';
-    msgBubble.style.borderRadius = '18px 18px 4px 18px';
-    msgBubble.style.fontSize = '14px';
-    msgBubble.style.lineHeight = '1.4';
-    msgBubble.style.display = 'inline-block';
-    msgBubble.style.maxWidth = '80%';
-    msgBubble.textContent = text;
-
-    const timeStamp = document.createElement('div');
-    timeStamp.style.fontSize = '11px';
-    timeStamp.style.color = '#9CA3AF';
-    timeStamp.style.marginTop = '4px';
-    timeStamp.style.marginRight = '4px';
-    timeStamp.textContent = formatTime();
-
-    msgContent.appendChild(msgBubble);
-    msgContent.appendChild(timeStamp);
-    msgContainer.appendChild(avatar);
-    msgContainer.appendChild(msgContent);
-
-    return msgContainer;
-  }
-
-  // Fungsi untuk mengirim pesan
-  function sendMessage(message) {
-    if (!message.trim()) return;
-
-    // Tampilkan pesan user
-    const userMsg = createUserMessage(message);
-    chatArea.appendChild(userMsg);
-    chatArea.scrollTop = chatArea.scrollHeight;
-    
-    // Clear input
-    input.value = '';
-
-    // Tampilkan typing indicator
-    const typingIndicator = createTypingIndicator();
-    chatArea.appendChild(typingIndicator);
-    chatArea.scrollTop = chatArea.scrollHeight;
-
-    // Fetch ke API Flowise
-    fetch('https://cloud.flowiseai.com/api/v1/prediction/e5cb30ac-9646-4d97-8a86-3feb17d35f0d', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: message })
-    })
-    .then(res => res.json())
-    .then(data => {
-      // Hapus typing indicator
-      chatArea.removeChild(typingIndicator);
+        // Quick replies container
+        const container = document.createElement('div');
+        container.style.padding = '8px 0';
+        container.style.background = '#F8FAFC';
+        container.style.overflowX = 'auto';
+        container.style.overflowY = 'hidden';
+        
+        // Scrollable container untuk buttons
+        const scrollContainer = document.createElement('div');
+        scrollContainer.style.display = 'flex';
+        scrollContainer.style.gap = '6px';
+        scrollContainer.style.padding = '0 12px';
+        scrollContainer.style.minWidth = 'max-content';
+        scrollContainer.style.scrollBehavior = 'smooth';
       
-      // Tampilkan balasan bot dengan atau tanpa tombol WhatsApp
-      const showWA = /whatsapp|hubungi admin|klik tombol di bawah/i.test(data.text || '');
-      const botMsg = createBotMessage(
-        data.text || 'Maaf, saya tidak dapat memproses permintaan Anda saat ini. Silakan coba lagi.',
-        showWA
-      );
-      chatArea.appendChild(botMsg);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    })
-    .catch(() => {
-      // Hapus typing indicator
-      chatArea.removeChild(typingIndicator);
-      
-      const botMsg = createBotMessage('Maaf, terjadi kesalahan koneksi. Silakan coba lagi dalam beberapa saat.');
-      chatArea.appendChild(botMsg);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    });
-  }
+        // Buat quick reply buttons
+        CONFIG.QUICK_REPLIES.forEach(reply => {
+          const btn = document.createElement('button');
+          btn.textContent = reply;
+          btn.style.background = 'white';
+          btn.style.border = '1px solid #E2E8F0';
+          btn.style.borderRadius = '16px';
+          btn.style.padding = '6px 12px';
+          btn.style.fontSize = '12px';
+          btn.style.cursor = 'pointer';
+          btn.style.transition = 'all 0.2s';
+          btn.style.color = '#475569';
+          btn.style.fontWeight = '500';
+          btn.style.whiteSpace = 'nowrap';
+          btn.style.flexShrink = '0';
+          btn.style.minWidth = '100px';
+          btn.style.maxWidth = '140px';
+          btn.style.textAlign = 'center';
+          
+          btn.onmouseover = function() {
+            btn.style.background = '#F97316';
+            btn.style.color = 'white';
+            btn.style.borderColor = '#F97316';
+            btn.style.transform = 'translateY(-1px)';
+            btn.style.boxShadow = '0 2px 8px rgba(149, 125, 150, 0.3)';
+          };
+          btn.onmouseout = function() {
+            btn.style.background = 'white';
+            btn.style.color = '#475569';
+            btn.style.borderColor = '#E2E8F0';
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = 'none';
+          };
+          
+          btn.onclick = function() {
+            handleQuickReply(reply);
+          };
+          
+          scrollContainer.appendChild(btn);
+        });
+        
+        container.appendChild(scrollContainer);
+        quickRepliesContainer.appendChild(container);
+    };
 
-  // Fungsi untuk membuat typing indicator
-  function createTypingIndicator() {
-    const msgContainer = document.createElement('div');
-    msgContainer.style.display = 'flex';
-    msgContainer.style.alignItems = 'flex-start';
-    msgContainer.style.gap = '8px';
-    msgContainer.style.marginBottom = '4px';
+    // Format time in Indonesian
+    const formatTime = () => {
+        const now = new Date();
+        return now.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
 
-    const avatar = document.createElement('div');
-    avatar.style.width = '32px';
-    avatar.style.height = '32px';
-    avatar.style.background = '#F97316';
-    avatar.style.borderRadius = '50%';
-    avatar.style.display = 'flex';
-    avatar.style.alignItems = 'center';
-    avatar.style.justifyContent = 'center';
-    avatar.style.flexShrink = '0';
-    avatar.innerHTML = `
-      <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
-        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z"/>
-      </svg>
-    `;
+    // Add message to chat
+    const addMessage = (content, type = 'bot', showWhatsApp = false) => {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        const messageElement = document.createElement('div');
+        messageElement.className = `chatbot-message ${type}`;
+        
+        const avatarContent = type === 'bot' 
+            ? `<img src="${LOGO_CONFIG.botAvatar}" alt="Kedai J.A" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display: none;">${LOGO_CONFIG.fallbackIcon}</div>`
+            : icons.user;
+        
+        // Deteksi ringkasan pesanan
+        const isOrderSummary = content.includes('Baik, berikut adalah ringkasan pesanan Anda:');
+        let whatsappButtonHtml = '';
+        if (isOrderSummary) {
+            // Tombol khusus untuk order summary
+            const orderText = content.replace(/<br>/g, '\n');
+            const waUrl = `https://wa.me/62857979541136?text=${encodeURIComponent(orderText)}`;
+            whatsappButtonHtml = `
+                <a href="${waUrl}" target="_blank" class="chatbot-whatsapp-btn">
+                    ${icons.whatsapp}
+                    Teruskan Pesanan ke Admin
+                </a>
+            `;
+        } else if (showWhatsApp) {
+            // Tombol WhatsApp default
+            whatsappButtonHtml = `
+                <a href="https://wa.me/62857979541136" target="_blank" class="chatbot-whatsapp-btn">
+                    ${icons.whatsapp}
+                    Hubungi WhatsApp Admin
+                </a>
+            `;
+        }
+        
+        messageElement.innerHTML = `
+            <div class="chatbot-message-avatar">
+                ${avatarContent}
+            </div>
+            <div class="chatbot-message-content">
+                ${content}
+                <div class="chatbot-message-time">${formatTime()}</div>
+                ${whatsappButtonHtml}
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return messageElement;
+    };
 
-    const msgBubble = document.createElement('div');
-    msgBubble.style.background = 'white';
-    msgBubble.style.padding = '12px 16px';
-    msgBubble.style.borderRadius = '18px 18px 18px 4px';
-    msgBubble.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-    msgBubble.innerHTML = `
-      <div style="display: flex; gap: 4px; align-items: center;">
-        <div style="width: 8px; height: 8px; background: #9CA3AF; border-radius: 50%; animation: typing 1.4s infinite ease-in-out;"></div>
-        <div style="width: 8px; height: 8px; background: #9CA3AF; border-radius: 50%; animation: typing 1.4s infinite ease-in-out 0.2s;"></div>
-        <div style="width: 8px; height: 8px; background: #9CA3AF; border-radius: 50%; animation: typing 1.4s infinite ease-in-out 0.4s;"></div>
-      </div>
-    `;
+    // Simple scroll functionality for quick replies
+    // The scroll behavior is now handled by CSS with overflow-x: auto and scroll-behavior: smooth
 
-    msgContainer.appendChild(avatar);
-    msgContainer.appendChild(msgBubble);
+    // Show typing indicator
+    const showTyping = () => {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        const typingElement = document.createElement('div');
+        typingElement.className = 'chatbot-typing';
+        typingElement.id = 'chatbot-typing';
+        typingElement.innerHTML = `
+            <div class="chatbot-message-avatar" style="background: #F97316;">
+                <img src="${LOGO_CONFIG.botAvatar}" alt="Kedai J.A" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display: none;">${LOGO_CONFIG.fallbackIcon}</div>
+            </div>
+            <div class="chatbot-typing-dots">
+                <div class="chatbot-typing-dot"></div>
+                <div class="chatbot-typing-dot"></div>
+                <div class="chatbot-typing-dot"></div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(typingElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
 
-    return msgContainer;
-  }
+    // Hide typing indicator
+    const hideTyping = () => {
+        const typingElement = document.getElementById('chatbot-typing');
+        if (typingElement) {
+            typingElement.remove();
+        }
+    };
 
-  // Event handler untuk form
-  form.onsubmit = function(e) {
-    e.preventDefault();
-    sendMessage(input.value);
-  };
+// Global session management
+let sessionId = null;
 
-  // Function to detect mobile devices
-  function isMobileDevice() {
-    // More comprehensive mobile detection
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    
-    // Check for mobile user agents
-    const mobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-    
-    // Check screen width (mobile-first approach) - primary indicator for mobile
-    const smallScreen = window.innerWidth <= 768;
-    
-    // Check for touch capability
-    const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    // Check for mobile-specific properties
-    const mobileOrientation = typeof window.orientation !== "undefined";
-    
-    // Mobile if: small screen, OR mobile user agent, OR touch + small screen
-    return mobileUA || smallScreen || (touchDevice && smallScreen) || mobileOrientation;
-  }
-
-  // Event handler untuk tombol chatbot
-  button.onclick = function() {
-    // Check if it's a mobile device
-    console.log('Mobile device detected:', isMobileDevice());
-    console.log('Screen width:', window.innerWidth);
-    console.log('Touch device:', 'ontouchstart' in window);
-    
-    if (isMobileDevice()) {
-      // Open chatbot in new tab for mobile - Use only ONE method
-      console.log('Opening chatbot in new tab...');
-      badge.style.display = 'none';
-      
-      // Use the more reliable link method directly
-      const tempLink = document.createElement('a');
-      tempLink.href = '/chatbot';
-      tempLink.target = '_blank';
-      tempLink.rel = 'noopener noreferrer';
-      tempLink.style.display = 'none';
-      document.body.appendChild(tempLink);
-      
-      // Simulate user click which bypasses popup blockers
-      tempLink.click();
-      document.body.removeChild(tempLink);
-      
-      console.log('Chatbot opened in new tab');
+// Initialize session
+const initializeSession = () => {
+    sessionId = localStorage.getItem('chatbot-session-id');
+    if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem('chatbot-session-id', sessionId);
+        console.log('New session created:', sessionId);
     } else {
-      // Use overlay for desktop
-      console.log('Using overlay for desktop...');
-      const isVisible = chatWindow.style.display === 'flex';
-      chatWindow.style.display = isVisible ? 'none' : 'flex';
-      if (!isVisible) {
-        badge.style.display = 'none';
-        input.focus();
-      }
+        console.log('Existing session restored:', sessionId);
     }
-  };
+    return sessionId;
+};
 
-  // Susun komponen
-  chatWindow.appendChild(header);
-  chatWindow.appendChild(chatArea);
-  chatWindow.appendChild(quickRepliesContainer);
-  chatWindow.appendChild(inputContainer);
+// Reset session (for testing or user request)
+const resetSession = () => {
+    localStorage.removeItem('chatbot-session-id');
+    sessionId = null;
+    initializeSession();
+    console.log('Session reset completed');
+};
 
-  // Tambahkan CSS untuk animasi typing
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes typing {
-      0%, 60%, 100% {
-        transform: translateY(0);
-        opacity: 0.4;
-      }
-      30% {
-        transform: translateY(-10px);
-        opacity: 1;
-      }
-    }
-    
-    /* Custom scrollbar untuk quick replies */
-    #kedaija-chatbot-window div::-webkit-scrollbar {
-      height: 4px;
-    }
-    
-    #kedaija-chatbot-window div::-webkit-scrollbar-track {
-      background: #F1F5F9;
-      border-radius: 2px;
-    }
-    
-    #kedaija-chatbot-window div::-webkit-scrollbar-thumb {
-      background: #CBD5E1;
-      border-radius: 2px;
-    }
-    
-    #kedaija-chatbot-window div::-webkit-scrollbar-thumb:hover {
-      background: #94A3B8;
-    }
-  `;
-  document.head.appendChild(style);
+// Send message to Flowise API with enhanced session management
+const sendToFlowise = async (message) => {
+    try {
+        // Ensure session is initialized
+        if (!sessionId) {
+            initializeSession();
+        }
 
-  // Tambahkan ke DOM
-  document.body.appendChild(button);
-  document.body.appendChild(chatWindow);
+        console.log('Sending message with sessionId:', sessionId);
 
-  // Tampilkan badge notifikasi setelah 3 detik
-  setTimeout(() => {
-    if (chatWindow.style.display !== 'flex') {
-      badge.style.display = 'flex';
+        const response = await fetch(CONFIG.FLOWISE_API, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionId}`, // Optional: pass sessionId in header
+            },
+            body: JSON.stringify({
+                question: message,
+                sessionId: sessionId,
+                overrideConfig: {
+                    sessionId: sessionId
+                },
+                // Additional metadata for better session tracking
+                metadata: {
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    sessionId: sessionId
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Log successful response
+        console.log('Flowise response received for session:', sessionId);
+        
+        return data.text || data.message || 'Maaf, saya tidak dapat memproses permintaan Anda saat ini.';
+    } catch (error) {
+        console.error('Flowise API Error for session', sessionId, ':', error);
+        
+        // If session seems invalid, try to reset it
+        if (error.message.includes('401') || error.message.includes('403')) {
+            console.log('Session may be invalid, attempting reset...');
+            resetSession();
+        }
+        
+        return 'Maaf, terjadi gangguan koneksi. Silakan coba lagi atau hubungi admin untuk bantuan lebih lanjut.';
     }
-  }, 3000);
+};
+    // Handle message sending
+    const handleSendMessage = async (message) => {
+        if (!message.trim()) return;
+
+        // Check for special commands
+        if (message.toLowerCase() === '/reset' || message.toLowerCase() === 'reset session') {
+            resetSession();
+            addMessage('Session telah direset. Silakan mulai chat baru!', 'bot');
+            return;
+        }
+
+        if (message.toLowerCase() === '/session' || message.toLowerCase() === 'session info') {
+            addMessage(`🔧 Session ID: ${sessionId?.substring(0, 8)}...\n📅 Created: ${new Date().toLocaleString('id-ID')}`, 'bot');
+            return;
+        }
+
+        // Add user message
+        addMessage(message, 'user');
+        
+        // Clear input
+        const input = document.getElementById('chatbot-input');
+        input.value = '';
+        
+        // Show typing
+        showTyping();
+        
+        // Send to AI
+        const aiResponse = await sendToFlowise(message);
+        
+        // Hide typing
+        hideTyping();
+        
+        // Determine if should show WhatsApp button
+        const showWhatsApp = message.toLowerCase().includes('admin') || 
+                            message.toLowerCase().includes('hubungi') ||
+                            message.toLowerCase().includes('pesan') ||
+                            aiResponse.toLowerCase().includes('admin');
+        
+        // Add AI response
+        addMessage(aiResponse.replace(/\n/g, '<br>'), 'bot', showWhatsApp);
+    };
+
+    // Handle quick replies - send to Flowise API
+    const handleQuickReply = async (reply) => {
+        // Special handling for menu button
+        if (reply === 'Lihat menu Kedai J.A') {
+            addMessage(reply, 'user');
+            
+            setTimeout(() => {
+                showTyping();
+                setTimeout(() => {
+                    hideTyping();
+                    
+                    // Create menu response with button
+                    const menuResponse = `Anda dapat menekan tombol di bawah untuk melihat menu secara lengkap. Silahkan tanyakan bila ada pertanyaan menu pilihan anda!`;
+                    
+                    // Add message with custom button
+                    addMessageWithMenuButton(menuResponse, 'bot');
+                }, 1000);
+            }, 300);
+            
+            return;
+        }
+        
+        // Special handling for location button
+        if (reply === 'Lokasi kami') {
+            addMessage(reply, 'user');
+            
+            setTimeout(() => {
+                showTyping();
+                setTimeout(async () => {
+                    try {
+                        // Get AI response from Flowise
+                        const aiResponse = await sendToFlowise(reply);
+                        hideTyping();
+                        
+                        // Add message with location button using AI response
+                        addMessageWithLocationButton(aiResponse, 'bot');
+                    } catch (error) {
+                        hideTyping();
+                        console.error('Error getting location response:', error);
+                        addMessage('Maaf, terjadi kesalahan. Silakan coba lagi.', 'bot');
+                    }
+                }, 1000);
+            }, 300);
+            
+            return;
+        }
+        
+        // Special handling for admin contact button
+        if (reply === 'Hubungi admin') {
+            addMessage(reply, 'user');
+            
+            setTimeout(() => {
+                showTyping();
+                setTimeout(() => {
+                    hideTyping();
+                    
+                    // Use hardcoded response for admin contact
+                    const adminResponse = `Anda dapat menghubungi admin kami melalui WhatsApp di nomor 0812-3456-7890 untuk bantuan lebih lanjut. Apakah ada yang ingin Anda tanyakan atau butuh bantuan lain?`;
+                    
+                    // Add message with WhatsApp button
+                    addMessage(adminResponse, 'bot', true);
+                }, 1000);
+            }, 300);
+            
+            return;
+        }
+        
+        // Regular quick reply handling for other buttons
+        addMessage(reply, 'user');
+        
+        // Show typing indicator
+        setTimeout(() => {
+            showTyping();
+        }, 300);
+        
+        try {
+            // Send quick reply to Flowise API
+            const aiResponse = await sendToFlowise(reply);
+            
+            // Hide typing indicator
+            hideTyping();
+            
+            // Determine if should show WhatsApp button based on response content
+            const showWhatsApp = reply.toLowerCase().includes('admin') || 
+                                reply.toLowerCase().includes('hubungi') ||
+                                reply.toLowerCase().includes('pesan') ||
+                                reply.toLowerCase().includes('order') ||
+                                reply.toLowerCase().includes('pemesanan') ||
+                                aiResponse.toLowerCase().includes('admin') ||
+                                aiResponse.toLowerCase().includes('whatsapp') ||
+                                aiResponse.toLowerCase().includes('wa') ||
+                                aiResponse.toLowerCase().includes('acara') ||
+                                aiResponse.toLowerCase().includes('tolong') ||
+                                aiResponse.toLowerCase().includes('hubungi');
+            
+            // Add AI response from Flowise
+            addMessage(aiResponse.replace(/\n/g, '<br>'), 'bot', showWhatsApp);
+
+            
+        } catch (error) {
+            // Hide typing indicator
+            hideTyping();
+            
+            // Show error message
+            addMessage('Maaf, terjadi gangguan koneksi. Silakan coba lagi atau hubungi admin untuk bantuan lebih lanjut.', 'bot');
+            
+            console.error('Quick reply error:', error);
+        }
+    };
+
+    // Function to add message with menu button
+    const addMessageWithMenuButton = (content, type = 'bot') => {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        const messageElement = document.createElement('div');
+        messageElement.className = `chatbot-message ${type}`;
+        
+        const avatarContent = type === 'bot' 
+            ? `<img src="${LOGO_CONFIG.botAvatar}" alt="Kedai J.A" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display: none;">${LOGO_CONFIG.fallbackIcon}</div>`
+            : icons.user;
+            
+        messageElement.innerHTML = `
+            <div class="chatbot-message-avatar">
+                ${avatarContent}
+            </div>
+            <div class="chatbot-message-content">
+                ${content}
+                <div class="chatbot-message-time">${formatTime()}</div>
+                <a href="#" target="_blank" class="chatbot-menu-btn" id="menu-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    Lihat Menu Lengkap
+                </a>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Add click event to menu button
+        setTimeout(() => {
+            const menuBtn = document.getElementById('menu-btn');
+            if (menuBtn) {
+                menuBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Use Next.js SPA navigation to preserve chatbot session
+                    const menuUrl = '/menu';
+                    
+                    // Check if Next.js router is available
+                    if (typeof window !== 'undefined' && window.next && window.next.router) {
+                        // Use Next.js router for SPA navigation
+                        window.next.router.push(menuUrl);
+                    } else if (typeof window !== 'undefined' && window.__NEXT_DATA__) {
+                        // Alternative: Use Next.js router if available globally
+                        try {
+                            // Try to access Next.js router from global scope
+                            const router = window.__NEXT_ROUTER_BASEPATH__ ? 
+                                window.__NEXT_ROUTER_BASEPATH__ : 
+                                window.location.pathname;
+                            
+                            // Navigate using history API for SPA-like behavior
+                            window.history.pushState({}, '', menuUrl);
+                            
+                            // Trigger route change event for Next.js
+                            window.dispatchEvent(new PopStateEvent('popstate'));
+                        } catch (error) {
+                            console.log('Next.js router not available, using fallback navigation');
+                            // Fallback to regular navigation
+                            window.location.href = menuUrl;
+                        }
+                    } else {
+                        // Fallback: Use history API for SPA-like navigation
+                        try {
+                            window.history.pushState({}, '', menuUrl);
+                            window.dispatchEvent(new PopStateEvent('popstate'));
+                        } catch (error) {
+                            console.log('History API not available, using regular navigation');
+                            window.location.href = menuUrl;
+                        }
+                    }
+                });
+            }
+        }, 100);
+        
+        return messageElement;
+    };
+
+    // Function to add message with location button
+    const addMessageWithLocationButton = (content, type = 'bot') => {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        const messageElement = document.createElement('div');
+        messageElement.className = `chatbot-message ${type}`;
+        
+        const avatarContent = type === 'bot' 
+            ? `<img src="${LOGO_CONFIG.botAvatar}" alt="Kedai J.A" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display: none;">${LOGO_CONFIG.fallbackIcon}</div>`
+            : icons.user;
+            
+        messageElement.innerHTML = `
+            <div class="chatbot-message-avatar">
+                ${avatarContent}
+            </div>
+            <div class="chatbot-message-content">
+                ${content}
+                <div class="chatbot-message-time">${formatTime()}</div>
+                <a href="#" target="_blank" class="chatbot-location-btn" id="location-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Petunjuk Arah
+                </a>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Add click event to location button
+        setTimeout(() => {
+            const locationBtn = document.getElementById('location-btn');
+            if (locationBtn) {
+                locationBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Open location in new tab - URL can be customized later
+                    const locationUrl = 'https://maps.app.goo.gl/qRgeEpQuuwuzMJX67'; // TODO: Ganti dengan URL yang sesuai
+                    window.open(locationUrl, '_blank');
+                });
+            }
+        }, 100);
+        
+        return messageElement;
+    };
+
+    // Show welcome message
+    const showWelcomeMessage = () => {
+        setTimeout(() => {
+            addMessage(CONFIG.WELCOME_MESSAGE, 'bot');
+        }, 500);
+    };
+
+    // Toggle chat window
+    const toggleChat = () => {
+        const window = document.getElementById('chatbot-window');
+        const badge = document.getElementById('chatbot-badge');
+        const input = document.getElementById('chatbot-input');
+        
+        if (isOpen) {
+            window.style.display = 'none';
+            isOpen = false;
+        } else {
+            window.style.display = 'flex';
+            badge.style.display = 'none';
+            isOpen = true;
+            
+            // Auto-focus input
+            setTimeout(() => {
+                input.focus();
+            }, 100);
+            
+            // Show welcome message if no messages
+            const messages = document.getElementById('chatbot-messages');
+            if (messages.children.length === 0) {
+                showWelcomeMessage();
+            }
+        }
+    };
+
+    // Initialize chatbot
+    const init = () => {
+        // Initialize session management
+        initializeSession();
+        
+        // Inject styles
+        injectStyles();
+        
+        // Create chatbot
+        const chatbot = createChatbot();
+        
+        // Show badge after 3 seconds
+        setTimeout(() => {
+            const badge = document.getElementById('chatbot-badge');
+            if (!isOpen) {
+                badge.style.display = 'flex';
+            }
+        }, 3000);
+        
+        // Event listeners
+        document.getElementById('chatbot-toggle').addEventListener('click', toggleChat);
+        document.getElementById('chatbot-close').addEventListener('click', toggleChat);
+        
+        // Quick replies are now created dynamically in createQuickReplies()
+        // No need for additional event listeners here
+        
+        // Input handling
+        const input = document.getElementById('chatbot-input');
+        const sendBtn = document.getElementById('chatbot-send');
+        
+        const handleSend = () => {
+            const message = input.value.trim();
+            if (message) {
+                handleSendMessage(message);
+            }
+        };
+        
+        sendBtn.addEventListener('click', handleSend);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+        
+        // Input state management
+        input.addEventListener('input', () => {
+            sendBtn.disabled = !input.value.trim();
+        });
+        
+        sendBtn.disabled = true;
+    };
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
 })();
