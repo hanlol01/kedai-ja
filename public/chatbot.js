@@ -1600,26 +1600,29 @@ const sendToFlowise = async (message) => {
         setTimeout(() => {
             const menuBtn = document.getElementById('menu-btn');
             if (menuBtn) {
-                menuBtn.addEventListener('click', (e) => {
+                                menuBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     // Use Next.js SPA navigation to preserve chatbot session
                     const menuUrl = '/menu';
-
+                    
+                    // Check if we're in browser environment
+                    if (typeof window === 'undefined') return;
+                    
                     // Check if Next.js router is available
-                    if (typeof window !== 'undefined' && window.next && window.next.router) {
+                    if (window.next && window.next.router) {
                         // Use Next.js router for SPA navigation
                         window.next.router.push(menuUrl);
-                    } else if (typeof window !== 'undefined' && window.__NEXT_DATA__) {
+                    } else if (window.__NEXT_DATA__) {
                         // Alternative: Use Next.js router if available globally
                         try {
                             // Try to access Next.js router from global scope
-                            const router = window.__NEXT_ROUTER_BASEPATH__ ?
-                                window.__NEXT_ROUTER_BASEPATH__ :
+                            const router = window.__NEXT_ROUTER_BASEPATH__ ? 
+                                window.__NEXT_ROUTER_BASEPATH__ : 
                                 window.location.pathname;
-
+                            
                             // Navigate using history API for SPA-like behavior
                             window.history.pushState({}, '', menuUrl);
-
+                            
                             // Trigger route change event for Next.js
                             window.dispatchEvent(new PopStateEvent('popstate'));
                         } catch (error) {
@@ -1679,6 +1682,9 @@ const sendToFlowise = async (message) => {
             if (locationBtn) {
                 locationBtn.addEventListener('click', (e) => {
                     e.preventDefault();
+                    // Check if we're in browser environment
+                    if (typeof window === 'undefined') return;
+                    
                     // Open location in new tab - URL can be customized later
                     const locationUrl = 'https://maps.app.goo.gl/sQDcw6HocYNhSFvw8'; // TODO: Ganti dengan URL yang sesuai
                     window.open(locationUrl, '_blank');
@@ -1696,25 +1702,28 @@ const sendToFlowise = async (message) => {
         }, 500);
     };
 
-    // Toggle chat window
+        // Toggle chat window
     const toggleChat = () => {
-        const window = document.getElementById('chatbot-window');
+        // Check if we're in browser environment
+        if (typeof window === 'undefined') return;
+        
+        const chatWindow = document.getElementById('chatbot-window');
         const badge = document.getElementById('chatbot-badge');
         const input = document.getElementById('chatbot-input');
-
+        
         if (isOpen) {
-            window.style.display = 'none';
+            chatWindow.style.display = 'none';
             isOpen = false;
         } else {
-            window.style.display = 'flex';
+            chatWindow.style.display = 'flex';
             badge.style.display = 'none';
             isOpen = true;
-
+            
             // Auto-focus input
             setTimeout(() => {
                 input.focus();
             }, 100);
-
+            
             // Show welcome message if no messages
             const messages = document.getElementById('chatbot-messages');
             if (messages.children.length === 0) {
@@ -1804,11 +1813,13 @@ const sendToFlowise = async (message) => {
         sendBtn.disabled = true;
     };
 
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
+    // Initialize when DOM is ready (only in browser)
+    if (typeof window !== 'undefined') {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     }
 
 })();
