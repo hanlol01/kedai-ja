@@ -589,7 +589,7 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
                 ${icons.chat}
                 <span class="chatbot-badge" id="chatbot-badge" style="display: none;">!</span>
             </button>
-
+            
             <div class="chatbot-window" id="chatbot-window">
                 <div class="chatbot-header">
                     <div class="chatbot-header-content">
@@ -610,13 +610,13 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
                     </button>
                     </div>
                 </div>
-
+                
                 <div class="chatbot-messages" id="chatbot-messages"></div>
-
+                
                 <div class="chatbot-quick-replies" id="chatbot-quick-replies">
                     <!-- Quick replies will be created dynamically -->
                 </div>
-
+                
                 <div class="chatbot-input-container">
                     <textarea class="chatbot-input" id="chatbot-input" placeholder="Ketik pesan Anda... (Shift+Enter untuk baris baru)" maxlength="500" rows="1"></textarea>
                     <button class="chatbot-send" id="chatbot-send">
@@ -1285,7 +1285,7 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
                 ${gofoodButtonHtml}
             </div>
         `;
-
+        
         messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         return messageElement;
@@ -1311,7 +1311,7 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
                 <div class="chatbot-typing-dot"></div>
             </div>
         `;
-
+        
         messagesContainer.appendChild(typingElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
@@ -1433,26 +1433,26 @@ const sendToFlowise = async (message) => {
 
         // Add user message
         addMessage(message, 'user');
-
+        
         // Clear input and reset height
         const input = document.getElementById('chatbot-input');
         input.value = '';
         input.style.height = 'auto';
-
+        
         // Show typing
         showTyping();
-
+        
         // Send to AI
         const aiResponse = await sendToFlowise(message);
-
+        
         // Hide typing
         hideTyping();
-
+        
         // Determine if should show WhatsApp button
-        const showWhatsApp = message.toLowerCase().includes('admin') ||
+        const showWhatsApp = message.toLowerCase().includes('admin') || 
                             message.toLowerCase().includes('hubungi') ||
                             aiResponse.toLowerCase().includes('admin');
-
+        
         // Add AI response
         addMessage(aiResponse.replace(/\n/g, '<br>'), 'bot', showWhatsApp);
     };
@@ -1507,7 +1507,7 @@ const sendToFlowise = async (message) => {
         // Special handling for admin contact button
         if (reply === 'Hubungi admin') {
         addMessage(reply, 'user');
-
+        
         setTimeout(() => {
             showTyping();
             setTimeout(() => {
@@ -1702,7 +1702,7 @@ const sendToFlowise = async (message) => {
         }, 500);
     };
 
-        // Toggle chat window
+    // Toggle chat window
     const toggleChat = () => {
         // Check if we're in browser environment
         if (typeof window === 'undefined') return;
@@ -1739,10 +1739,10 @@ const sendToFlowise = async (message) => {
 
         // Inject styles
         injectStyles();
-
+        
         // Create chatbot
         const chatbot = createChatbot();
-
+        
         // Show badge after 3 seconds
         setTimeout(() => {
             const badge = document.getElementById('chatbot-badge');
@@ -1750,7 +1750,7 @@ const sendToFlowise = async (message) => {
                 badge.style.display = 'flex';
             }
         }, 3000);
-
+        
         // Event listeners
         document.getElementById('chatbot-toggle').addEventListener('click', toggleChat);
         document.getElementById('chatbot-close').addEventListener('click', toggleChat);
@@ -1773,14 +1773,14 @@ const sendToFlowise = async (message) => {
         // Input handling with textarea and Shift+Enter support
         const input = document.getElementById('chatbot-input');
         const sendBtn = document.getElementById('chatbot-send');
-
+        
         const handleSend = () => {
             const message = input.value.trim();
             if (message) {
                 handleSendMessage(message);
             }
         };
-
+        
         sendBtn.addEventListener('click', handleSend);
         
         // Enhanced keypress handling for Shift+Enter
@@ -1791,12 +1791,12 @@ const sendToFlowise = async (message) => {
                     return;
                 } else {
                     // Enter only: send message
-                    e.preventDefault();
-                    handleSend();
+                e.preventDefault();
+                handleSend();
                 }
             }
         });
-
+        
         // Auto-resize textarea on input
         input.addEventListener('input', (e) => {
             autoResizeTextarea(e.target);
@@ -1809,16 +1809,16 @@ const sendToFlowise = async (message) => {
                 autoResizeTextarea(e.target);
             }, 0);
         });
-
+        
         sendBtn.disabled = true;
     };
 
     // Initialize when DOM is ready (only in browser)
     if (typeof window !== 'undefined') {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
         }
     }
 

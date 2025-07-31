@@ -1,6 +1,19 @@
 'use client';
 
-import { BubbleChat } from 'flowise-embed-react';
+import dynamic from 'next/dynamic';
+
+// Dynamic import dengan noSSR untuk mencegah error window is not defined
+const BubbleChat = dynamic(
+  () => import('flowise-embed-react').then((mod) => mod.BubbleChat),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-500">Loading chatbot...</div>
+      </div>
+    )
+  }
+);
 
 interface FlowiseChatbotProps {
   className?: string;
