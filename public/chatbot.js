@@ -895,7 +895,11 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
                     trimmedLine.match(/(?:dine-?in\/takeaway|takeaway\/dine-?in)\s*:?\s*(.+?)(?:\s+dengan|$)/i),
                     trimmedLine.match(/(?:makan\s+(?:di\s+tempat|dibawa\s+pulang))\s*:?\s*(.+?)(?:\s+dengan|$)/i),
                     trimmedLine.match(/(?:untuk\s+(?:makan\s+di\s+tempat|dibawa\s+pulang))/i),
-                    trimmedLine.match(/(?:pesanan|layanan)\s+untuk\s*:?\s*(.+?)(?:\s+dengan|$)/i)
+                    trimmedLine.match(/(?:pesanan|layanan)\s+untuk\s*:?\s*(.+?)(?:\s+dengan|$)/i),
+                    // Tambahan untuk format "Pilihan:" dan "Dine In/Take Away:"
+                    trimmedLine.match(/pilihan\s*:?\s*(.+?)(?:\s+dengan|$)/i),
+                    trimmedLine.match(/dine\s+in\/take\s+away\s*:?\s*(.+?)(?:\s+dengan|$)/i),
+                    trimmedLine.match(/dine\s+in\s*\/\s*take\s+away\s*:?\s*(.+?)(?:\s+dengan|$)/i)
                 ];
                 
                 for (const match of serviceMatches) {
@@ -967,6 +971,7 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
 
             // Tambahkan tipe layanan dengan penomoran
             if (serviceType) {
+                waText += `\nPilihan: Dine In/Take Away`;
                 waText += `\nTipe Layanan: ${serviceType}`;
             }
 
