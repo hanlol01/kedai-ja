@@ -8,7 +8,7 @@
         WHATSAPP_MESSAGE: 'Halo, saya ingin bertanya tentang pemesanan di Kedai J.A',
         WELCOME_MESSAGE: `Halo! Selamat datang di Kedai J.A 👋
 
-Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan pemesanan. Silakan pilih topik di bawah atau ketik pertanyaan Anda!`,
+Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan pemesanan. Saya juga dapat membantu Anda untuk memesan makanan dan melakukan reservasi sewa tempat kami untuk kebutuhan acara Anda. Silakan pilih topik di bawah atau ketik pertanyaan dan kebutuhan Anda!`,
         QUICK_REPLIES: [
             'Lihat menu Kedai J.A',
             'Jam operasional kami',
@@ -57,6 +57,55 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
             .chatbot-button:hover {
                 transform: scale(1.05);
                 box-shadow: 0 6px 25px rgba(249, 115, 22, 0.5);
+            }
+
+            .chatbot-tooltip {
+                position: fixed;
+                bottom: 30px;
+                right: 90px;
+                background: white;
+                color: #1F2937;
+                padding: 12px 16px;
+                border-radius: 20px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                font-size: 14px;
+                font-weight: 500;
+                white-space: nowrap;
+                z-index: 9998;
+                opacity: 0;
+                transform: translateX(10px);
+                transition: all 0.3s ease;
+                pointer-events: none;
+                border: 1px solid #E5E7EB;
+            }
+
+            .chatbot-tooltip.show {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            .chatbot-tooltip::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                right: -8px;
+                width: 0;
+                height: 0;
+                border: 8px solid transparent;
+                border-left-color: white;
+                transform: translateY(-50%);
+            }
+
+            .chatbot-tooltip::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                right: -9px;
+                width: 0;
+                height: 0;
+                border: 9px solid transparent;
+                border-left-color: #E5E7EB;
+                transform: translateY(-50%);
             }
 
             .chatbot-button svg {
@@ -551,6 +600,15 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
                     right: 20px;
                     left: 20px;
                 }
+
+                .chatbot-tooltip {
+                    right: 85px;
+                    font-size: 13px;
+                    padding: 10px 14px;
+                    max-width: 200px;
+                    white-space: normal;
+                    line-height: 1.3;
+                }
             }
         `;
 
@@ -585,6 +643,7 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
         const container = document.createElement('div');
         container.className = 'chatbot-container';
         container.innerHTML = `
+            <div class="chatbot-tooltip" id="chatbot-tooltip">Ada yang bisa saya bantu?</div>
             <button class="chatbot-button" id="chatbot-toggle">
                 ${icons.chat}
                 <span class="chatbot-badge" id="chatbot-badge" style="display: none;">!</span>
@@ -1714,6 +1773,7 @@ const sendToFlowise = async (message) => {
         
         const chatWindow = document.getElementById('chatbot-window');
         const badge = document.getElementById('chatbot-badge');
+        const tooltip = document.getElementById('chatbot-tooltip');
         const input = document.getElementById('chatbot-input');
         
         if (isOpen) {
@@ -1722,6 +1782,10 @@ const sendToFlowise = async (message) => {
         } else {
             chatWindow.style.display = 'flex';
             badge.style.display = 'none';
+            // Hide tooltip when chat is opened
+            if (tooltip) {
+                tooltip.classList.remove('show');
+            }
             isOpen = true;
             
             // Auto-focus input
@@ -1748,17 +1812,51 @@ const sendToFlowise = async (message) => {
         // Create chatbot
         const chatbot = createChatbot();
         
-        // Show badge after 3 seconds
+        // Show tooltip after 2 seconds, then badge after 5 seconds
         setTimeout(() => {
-            const badge = document.getElementById('chatbot-badge');
-            if (!isOpen) {
-                badge.style.display = 'flex';
+            const tooltip = document.getElementById('chatbot-tooltip');
+            if (!isOpen && tooltip) {
+                tooltip.classList.add('show');
+                
+                // Hide tooltip after 4 seconds and show badge
+                setTimeout(() => {
+                    tooltip.classList.remove('show');
+                    
+                    // Show badge 1 second after tooltip disappears
+                    setTimeout(() => {
+                        const badge = document.getElementById('chatbot-badge');
+                        if (!isOpen && badge) {
+                            badge.style.display = 'flex';
+                        }
+                    }, 1000);
+                }, 4000);
             }
-        }, 3000);
+        }, 2000);
         
         // Event listeners
-        document.getElementById('chatbot-toggle').addEventListener('click', toggleChat);
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        const tooltip = document.getElementById('chatbot-tooltip');
+        
+        chatbotToggle.addEventListener('click', toggleChat);
         document.getElementById('chatbot-close').addEventListener('click', toggleChat);
+        
+        // Tooltip hover effects
+        chatbotToggle.addEventListener('mouseenter', () => {
+            if (!isOpen && tooltip) {
+                tooltip.classList.add('show');
+            }
+        });
+        
+        chatbotToggle.addEventListener('mouseleave', () => {
+            if (!isOpen && tooltip) {
+                // Delay hiding tooltip slightly for better UX
+                setTimeout(() => {
+                    if (!isOpen) {
+                        tooltip.classList.remove('show');
+                    }
+                }, 300);
+            }
+        });
         document.getElementById('chatbot-reset').addEventListener('click', () => {
             // Reset session and clear messages
             resetSession();
