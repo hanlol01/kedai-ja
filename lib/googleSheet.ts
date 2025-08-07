@@ -15,7 +15,7 @@ const sheets = google.sheets({ version: 'v4', auth });
 
 // Konfigurasi Spreadsheet
 export const SPREADSHEET_CONFIG = {
-  spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || '1BBdNJ6BlDfftCmZxj8sq_tXaMO3t-Y8Qt3jP8bRJICw',
+  spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || 'your-spreadsheet-id-here',
   sheetName: 'Sheet1',
   range: 'A:C', // Kolom A (Nama menu), B (Harga), C (Stok)
 };
