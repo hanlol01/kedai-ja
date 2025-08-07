@@ -1,70 +1,81 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
+import { readSpreadsheetData, SPREADSHEET_CONFIG } from '@/lib/googleSheet';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    console.log('🧪 Testing configuration...');
+    console.log('🧪 Starting configuration test...');
     
-    // Test environment variables
-    const envVars = {
-      GOOGLE_SPREADSHEET_ID: process.env.GOOGLE_SPREADSHEET_ID,
-      GOOGLE_SERVICE_ACCOUNT_KEY_FILE: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE,
-      ENABLE_CRON_SYNC: process.env.ENABLE_CRON_SYNC,
-      MONGODB_URI: process.env.MONGODB_URI ? 'Set' : 'Not set'
+    const testResults = {
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      tests: {
+        environmentVariables: {
+          GOOGLE_SPREADSHEET_ID: !!process.env.GOOGLE_SPREADSHEET_ID,
+          GOOGLE_SERVICE_ACCOUNT_KEY: !!process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
+          GOOGLE_SERVICE_ACCOUNT_KEY_FILE: !!process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE,
+        },
+        database: false,
+        spreadsheet: false,
+        spreadsheetConfig: {
+          spreadsheetId: SPREADSHEET_CONFIG.spreadsheetId,
+          sheetName: SPREADSHEET_CONFIG.sheetName,
+          range: SPREADSHEET_CONFIG.range,
+        }
+      },
+      errors: [] as string[]
     };
-    
-    console.log('Environment variables:', envVars);
-    
-    // Test database connection
+
+    // Test 1: Environment Variables
+    console.log('📋 Checking environment variables...');
+    if (!process.env.GOOGLE_SPREADSHEET_ID) {
+      testResults.errors.push('GOOGLE_SPREADSHEET_ID not found');
+    }
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE) {
+      testResults.errors.push('No Google service account configuration found');
+    }
+
+    // Test 2: Database Connection
+    console.log('🗄️ Testing database connection...');
     try {
       await connectDB();
+      testResults.tests.database = true;
       console.log('✅ Database connection successful');
-    } catch (dbError) {
-      console.error('❌ Database connection failed:', dbError);
-      return NextResponse.json({
-        success: false,
-        message: 'Database connection failed',
-        error: dbError instanceof Error ? dbError.message : 'Unknown error',
-        envVars
-      }, { status: 500 });
+    } catch (error) {
+      testResults.errors.push(`Database connection failed: ${error}`);
+      console.error('❌ Database connection failed:', error);
     }
-    
-    // Test Google Sheets configuration
+
+    // Test 3: Google Sheets API
+    console.log('📊 Testing Google Sheets API...');
     try {
-      const { readSpreadsheetData } = await import('@/lib/googleSheet');
-      console.log('✅ Google Sheets import successful');
-      
-      // Try to read spreadsheet (this will fail if config is wrong, but that's expected)
-      try {
-        await readSpreadsheetData();
-        console.log('✅ Google Sheets read successful');
-      } catch (sheetsError) {
-        console.log('⚠️ Google Sheets read failed (expected if not configured):', sheetsError);
-      }
-      
-    } catch (sheetsImportError) {
-      console.error('❌ Google Sheets import failed:', sheetsImportError);
-      return NextResponse.json({
-        success: false,
-        message: 'Google Sheets import failed',
-        error: sheetsImportError instanceof Error ? sheetsImportError.message : 'Unknown error',
-        envVars
-      }, { status: 500 });
+      const data = await readSpreadsheetData();
+      testResults.tests.spreadsheet = true;
+      console.log(`✅ Google Sheets API successful - Found ${data.length} rows`);
+    } catch (error) {
+      testResults.errors.push(`Google Sheets API failed: ${error}`);
+      console.error('❌ Google Sheets API failed:', error);
     }
-    
+
+    // Determine overall status
+    const allTestsPassed = testResults.tests.database && testResults.tests.spreadsheet;
+    const hasErrors = testResults.errors.length > 0;
+
     return NextResponse.json({
-      success: true,
-      message: 'Configuration test completed',
-      envVars,
-      timestamp: new Date().toISOString()
+      status: allTestsPassed ? 'success' : 'error',
+      message: allTestsPassed 
+        ? 'All tests passed! Configuration is working correctly.' 
+        : 'Some tests failed. Check the errors below.',
+      ...testResults
     });
-    
+
   } catch (error) {
-    console.error('❌ Test error:', error);
+    console.error('❌ Test endpoint error:', error);
     return NextResponse.json({
-      success: false,
-      message: 'Test failed',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      status: 'error',
+      message: 'Test endpoint failed',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     }, { status: 500 });
   }
 } 

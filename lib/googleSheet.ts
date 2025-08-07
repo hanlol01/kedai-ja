@@ -3,13 +3,37 @@ import { google } from 'googleapis';
 // Konfigurasi Google Sheets
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
-// Inisialisasi Google Sheets API
-const auth = new google.auth.GoogleAuth({
-  credentials: process.env.GOOGLE_SERVICE_ACCOUNT_KEY 
-    ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY)
-    : { keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE || './service-account.json' },
-  scopes: SCOPES,
-});
+// Inisialisasi Google Sheets API dengan error handling yang lebih robust
+let auth: any;
+
+try {
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    // Untuk production (Vercel) - menggunakan JSON string dari environment variable
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+    auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: SCOPES,
+    });
+    console.log('✅ Using GOOGLE_SERVICE_ACCOUNT_KEY from environment variable');
+  } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE) {
+    // Untuk local development dengan custom path
+    auth = new google.auth.GoogleAuth({
+      keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE,
+      scopes: SCOPES,
+    });
+    console.log('✅ Using GOOGLE_SERVICE_ACCOUNT_KEY_FILE from environment variable');
+  } else {
+    // Fallback untuk local development dengan file default
+    auth = new google.auth.GoogleAuth({
+      keyFile: './service-account.json',
+      scopes: SCOPES,
+    });
+    console.log('✅ Using default service-account.json file');
+  }
+} catch (error) {
+  console.error('❌ Error initializing Google Auth:', error);
+  throw new Error('Failed to initialize Google Sheets authentication. Please check your service account configuration.');
+}
 
 const sheets = google.sheets({ version: 'v4', auth });
 
@@ -40,6 +64,8 @@ export interface MenuItemMapping {
 // Fungsi untuk membaca data dari spreadsheet
 export const readSpreadsheetData = async (): Promise<SpreadsheetRow[]> => {
   try {
+    console.log(`📖 Reading spreadsheet: ${SPREADSHEET_CONFIG.spreadsheetId}`);
+    
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_CONFIG.spreadsheetId,
       range: `${SPREADSHEET_CONFIG.sheetName}!${SPREADSHEET_CONFIG.range}`,
@@ -47,7 +73,7 @@ export const readSpreadsheetData = async (): Promise<SpreadsheetRow[]> => {
 
     const rows = response.data.values;
     if (!rows || rows.length === 0) {
-      console.log('No data found in spreadsheet');
+      console.log('📭 No data found in spreadsheet');
       return [];
     }
 
@@ -73,10 +99,10 @@ export const readSpreadsheetData = async (): Promise<SpreadsheetRow[]> => {
       }
     }
 
-    console.log(`Successfully read ${parsedData.length} rows from spreadsheet`);
+    console.log(`✅ Successfully read ${parsedData.length} rows from spreadsheet`);
     return parsedData;
   } catch (error) {
-    console.error('Error reading spreadsheet:', error);
+    console.error('❌ Error reading spreadsheet:', error);
     throw error;
   }
 };
@@ -84,6 +110,8 @@ export const readSpreadsheetData = async (): Promise<SpreadsheetRow[]> => {
 // Fungsi untuk menulis data ke spreadsheet
 export const writeSpreadsheetData = async (data: SpreadsheetRow[]): Promise<void> => {
   try {
+    console.log(`📝 Writing ${data.length} rows to spreadsheet`);
+    
     // Prepare data untuk spreadsheet (header + data)
     const spreadsheetData = [
       ['Nama menu', 'Harga', 'Stok'], // Header
@@ -103,9 +131,9 @@ export const writeSpreadsheetData = async (data: SpreadsheetRow[]): Promise<void
       },
     });
 
-    console.log(`Successfully wrote ${data.length} rows to spreadsheet`);
+    console.log(`✅ Successfully wrote ${data.length} rows to spreadsheet`);
   } catch (error) {
-    console.error('Error writing to spreadsheet:', error);
+    console.error('❌ Error writing to spreadsheet:', error);
     throw error;
   }
 };
@@ -113,6 +141,8 @@ export const writeSpreadsheetData = async (data: SpreadsheetRow[]): Promise<void
 // Fungsi untuk menambahkan baris baru ke spreadsheet
 export const appendSpreadsheetRow = async (data: SpreadsheetRow): Promise<void> => {
   try {
+    console.log(`➕ Appending row: ${data.name}`);
+    
     const rowData = [
       data.name,
       data.price.toString(),
@@ -129,9 +159,9 @@ export const appendSpreadsheetRow = async (data: SpreadsheetRow): Promise<void> 
       },
     });
 
-    console.log(`Successfully appended row: ${data.name}`);
+    console.log(`✅ Successfully appended row: ${data.name}`);
   } catch (error) {
-    console.error('Error appending to spreadsheet:', error);
+    console.error('❌ Error appending to spreadsheet:', error);
     throw error;
   }
 };
@@ -139,6 +169,8 @@ export const appendSpreadsheetRow = async (data: SpreadsheetRow): Promise<void> 
 // Fungsi untuk mencari dan update baris berdasarkan nama menu
 export const updateSpreadsheetRow = async (name: string, data: Partial<SpreadsheetRow>): Promise<void> => {
   try {
+    console.log(`🔄 Updating row for: ${name}`);
+    
     // Baca semua data untuk mencari index baris
     const allData = await readSpreadsheetData();
     const rowIndex = allData.findIndex(row => row.name.toLowerCase() === name.toLowerCase());
@@ -154,9 +186,9 @@ export const updateSpreadsheetRow = async (name: string, data: Partial<Spreadshe
     // Tulis kembali semua data
     await writeSpreadsheetData(allData);
     
-    console.log(`Successfully updated row for: ${name}`);
+    console.log(`✅ Successfully updated row for: ${name}`);
   } catch (error) {
-    console.error('Error updating spreadsheet row:', error);
+    console.error('❌ Error updating spreadsheet row:', error);
     throw error;
   }
 };
