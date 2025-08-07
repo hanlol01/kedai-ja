@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import MenuItem from '@/models/MenuItem';
 import { getSession } from '@/lib/auth';
+import { appendSpreadsheetRow } from '@/lib/googleSheet';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,6 +51,19 @@ export async function POST(request: NextRequest) {
     });
 
     await menuItem.save();
+    
+    // Auto-sync to spreadsheet
+    try {
+      await appendSpreadsheetRow({
+        name: menuItem.name,
+        price: menuItem.price,
+        available: menuItem.available
+      });
+      console.log(`✅ Auto-synced new menu item to spreadsheet: ${menuItem.name}`);
+    } catch (syncError) {
+      console.error('⚠️ Failed to auto-sync to spreadsheet:', syncError);
+      // Don't fail the request if sync fails
+    }
     
     return NextResponse.json({ 
       message: 'Menu item created successfully',
