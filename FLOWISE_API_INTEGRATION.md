@@ -21,54 +21,7 @@ Dokumentasi ini menjelaskan cara menggunakan API endpoints Kedai J.A untuk integ
 
 ## **📡 API Endpoints yang Tersedia**
 
-### **1. Settings Collection**
-```
-GET /api/flowise/settings
-```
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "_id": "...",
-      "restaurantName": "Kedai J.A",
-      "address": "...",
-      "phone": "...",
-      "email": "...",
-      "openingHours": "...",
-      "description": "..."
-    }
-  ],
-  "total": 1,
-  "timestamp": "2024-01-01T00:00:00.000Z"
-}
-```
-
-### **2. Testimonials Collection**
-```
-GET /api/flowise/testimonials
-```
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "_id": "...",
-      "name": "John Doe",
-      "rating": 5,
-      "comment": "Makanan enak sekali!",
-      "image": "...",
-      "isActive": true
-    }
-  ],
-  "total": 10,
-  "timestamp": "2024-01-01T00:00:00.000Z"
-}
-```
-
-### **3. Menu Items Collection**
+### **1. Menu Items Collection**
 ```
 GET /api/flowise/menuitems
 ```
@@ -93,7 +46,7 @@ GET /api/flowise/menuitems
 }
 ```
 
-### **4. FAQs Collection**
+### **2. FAQs Collection**
 ```
 GET /api/flowise/faqs
 ```
@@ -114,31 +67,9 @@ GET /api/flowise/faqs
 }
 ```
 
-### **5. Admins Collection**
+### **3. Best Sellers Collection**
 ```
-GET /api/flowise/admins
-```
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "_id": "...",
-      "username": "admin",
-      "email": "admin@kedaija.com",
-      "role": "admin",
-      "isActive": true
-    }
-  ],
-  "total": 2,
-  "timestamp": "2024-01-01T00:00:00.000Z"
-}
-```
-
-### **6. Chat History Collection**
-```
-GET /api/flowise/chat-history
+GET /api/flowise/bestsellers
 ```
 **Response:**
 ```json
@@ -147,18 +78,21 @@ GET /api/flowise/chat-history
   "data": [
     {
       "_id": "...",
-      "sessionId": "...",
-      "message": "Halo, apa menu yang tersedia?",
-      "response": "Berikut menu yang tersedia...",
-      "timestamp": "2024-01-01T00:00:00.000Z"
+      "name": "Nasi Goreng Spesial",
+      "description": "Nasi goreng dengan telur dan ayam",
+      "price": 30000,
+      "category": "Makanan Utama",
+      "image": "...",
+      "available": true,
+      "isBestSeller": true
     }
   ],
-  "total": 100,
+  "total": 5,
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-### **7. All Data (Semua Collections)**
+### **4. All Data (Semua Collections)**
 ```
 GET /api/flowise/all-data
 ```
@@ -167,14 +101,6 @@ GET /api/flowise/all-data
 {
   "success": true,
   "data": {
-    "settings": {
-      "data": [...],
-      "total": 1
-    },
-    "testimonials": {
-      "data": [...],
-      "total": 10
-    },
     "menuItems": {
       "data": [...],
       "total": 25
@@ -183,18 +109,14 @@ GET /api/flowise/all-data
       "data": [...],
       "total": 15
     },
-    "admins": {
+    "bestSellers": {
       "data": [...],
-      "total": 2
-    },
-    "chatHistory": {
-      "data": [...],
-      "total": 100
+      "total": 5
     }
   },
   "summary": {
-    "totalCollections": 6,
-    "totalRecords": 153,
+    "totalCollections": 3,
+    "totalRecords": 45,
     "timestamp": "2024-01-01T00:00:00.000Z"
   }
 }
@@ -239,7 +161,7 @@ menuItems.forEach(item => {
 // Access specific collections
 const menuItems = $json.data.menuItems.data;
 const faqs = $json.data.faqs.data;
-const settings = $json.data.settings.data;
+const bestSellers = $json.data.bestSellers.data;
 
 // Get summary
 const totalRecords = $json.summary.totalRecords;
@@ -294,18 +216,25 @@ if (relevantFAQ) {
 }
 ```
 
-### **3. Restaurant Information**
+### **3. Best Seller Information**
 ```javascript
-// URL: /api/flowise/settings
-const settings = $json.data[0];
+// URL: /api/flowise/bestsellers
+const bestSellers = $json.data;
 const userQuery = $input.toLowerCase();
 
-if (userQuery.includes('jam') || userQuery.includes('buka')) {
-  return `Jam operasional Kedai J.A: ${settings.openingHours}`;
-} else if (userQuery.includes('alamat') || userQuery.includes('lokasi')) {
-  return `Alamat Kedai J.A: ${settings.address}`;
-} else if (userQuery.includes('telepon') || userQuery.includes('kontak')) {
-  return `Kontak Kedai J.A:\n📞 ${settings.phone}\n📧 ${settings.email}`;
+if (userQuery.includes('best seller') || userQuery.includes('terlaris') || userQuery.includes('populer')) {
+  const availableBestSellers = bestSellers.filter(item => item.available);
+  if (availableBestSellers.length > 0) {
+    let response = "Berikut menu best seller kami:\n\n";
+    availableBestSellers.forEach(item => {
+      response += `🔥 ${item.name}\n`;
+      response += `   💰 Rp${item.price.toLocaleString()}\n`;
+      response += `   📝 ${item.description}\n\n`;
+    });
+    return response;
+  } else {
+    return "Maaf, saat ini tidak ada menu best seller yang tersedia.";
+  }
 }
 ```
 
@@ -366,4 +295,4 @@ Setiap response memiliki:
 3. **Format lebih fleksibel** (JSON structured)
 4. **Performance lebih baik** (query langsung ke database)
 
-**Sekarang Anda bisa menggunakan semua data Kedai J.A di Flowise AI dengan mudah!** 🎉
+**Sekarang Anda bisa menggunakan 3 collections utama Kedai J.A (Menu Items, FAQs, Best Sellers) di Flowise AI dengan mudah!** 🎉
