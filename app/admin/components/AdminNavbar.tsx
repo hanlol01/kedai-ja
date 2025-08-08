@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChefHat, Home, Menu, Settings, LogOut, User, MenuIcon, X, Star, Mail } from 'lucide-react';
+import { ChefHat, Home, Menu, Settings, LogOut, User, MenuIcon, X, Star, Mail, HelpCircle } from 'lucide-react';
 
 export default function AdminNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -98,6 +98,13 @@ export default function AdminNavbar() {
                   >
                     Tentang Kami
                   </Link>
+                  <Link
+                    href="/admin/faq"
+                    className="block px-3 py-1.5 text-gray-700 hover:bg-gray-100 rounded transition-colors duration-150 text-sm"
+                    onClick={() => setIsSettingsOpen(false)}
+                  >
+                    Kelola FAQ
+                  </Link>
                 </div>
               )}
             </div>
@@ -176,17 +183,24 @@ export default function AdminNavbar() {
                   <div className="mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                     <Link
                       href="/admin/settings"
-                      className="block px-4 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-600 rounded-t-lg transition-colors duration-200"
+                      className="block px-4 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition-colors duration-200"
                       onClick={() => { setIsSettingsOpen(false); setIsMenuOpen(false); }}
                     >
                       Profile Kedai
                     </Link>
                     <Link
                       href="/admin/about-us"
-                      className="block px-4 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-600 rounded-b-lg transition-colors duration-200"
+                      className="block px-4 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition-colors duration-200"
                       onClick={() => { setIsSettingsOpen(false); setIsMenuOpen(false); }}
                     >
                       Tentang Kami
+                    </Link>
+                    <Link
+                      href="/admin/faq"
+                      className="block px-4 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-600 rounded-b-lg transition-colors duration-200"
+                      onClick={() => { setIsSettingsOpen(false); setIsMenuOpen(false); }}
+                    >
+                      Kelola FAQ
                     </Link>
                   </div>
                 )}

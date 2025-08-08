@@ -33,8 +33,8 @@ export default function Menu() {
     try {
       const response = await fetch('/api/menu');
       const data = await response.json();
-      const availableItems = data.menuItems?.filter((item: MenuItem) => item.available) || [];
-      setMenuItems(availableItems);
+      // Tampilkan semua menu items, tidak hanya yang available
+      setMenuItems(data.menuItems || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -130,7 +130,7 @@ export default function Menu() {
             <div className="block md:hidden">
               <ul className="space-y-3">
                 {filteredItems.map((item) => (
-                  <li key={item._id} className="bg-white rounded-xl shadow-sm px-3 py-3 border border-gray-100">
+                  <li key={item._id} className={`bg-white rounded-xl shadow-sm px-3 py-3 border border-gray-100 ${!item.available ? 'opacity-75' : ''}`}>
                     {/* Baris atas: gambar, info utama sejajar */}
                     <div className="flex items-center w-full">
                       <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border mr-3">
@@ -147,7 +147,10 @@ export default function Menu() {
                         <div className="flex flex-col items-end ml-2 min-w-[90px]">
                           <span className="text-orange-500 font-bold text-base">{typeof item.price === 'number' ? `Rp ${item.price.toLocaleString('id-ID')}` : ''}</span>
                           <span className={`text-xs mt-1 px-2 py-0.5 rounded-full font-semibold ${item.category === 'Makanan' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>{item.category}</span>
-                          <span className="text-xs text-green-600 flex items-center mt-0.5"><span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>Tersedia</span>
+                          <span className={`text-xs flex items-center mt-0.5 ${item.available ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className={`w-2 h-2 rounded-full mr-1 ${item.available ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                            {item.available ? 'Tersedia' : 'Habis'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -162,7 +165,7 @@ export default function Menu() {
             {/* Desktop: Grid */}
             <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredItems.map((item) => (
-                <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div key={item._id} className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ${!item.available ? 'opacity-75' : ''}`}>
                   <div className="h-48 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -186,9 +189,9 @@ export default function Menu() {
                       <span className="text-2xl font-bold text-orange-500">
                         Rp {typeof item.price === 'number' ? item.price.toLocaleString('id-ID') : '0'}
                       </span>
-                      <div className="flex items-center text-green-600">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                        <span className="text-sm font-medium">Tersedia</span>
+                      <div className={`flex items-center ${item.available ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`w-2 h-2 rounded-full mr-2 ${item.available ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <span className="text-sm font-medium">{item.available ? 'Tersedia' : 'Habis'}</span>
                       </div>
                     </div>
                   </div>
