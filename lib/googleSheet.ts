@@ -112,6 +112,17 @@ export const writeSpreadsheetData = async (data: SpreadsheetRow[]): Promise<void
   try {
     console.log(`📝 Writing ${data.length} rows to spreadsheet`);
     
+    // 1) Clear existing values in target range first to avoid stale rows remaining after deletions
+    try {
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId: SPREADSHEET_CONFIG.spreadsheetId,
+        range: `${SPREADSHEET_CONFIG.sheetName}!${SPREADSHEET_CONFIG.range}`,
+      });
+      console.log('🧹 Cleared existing values in target range before write');
+    } catch (clearErr) {
+      console.warn('⚠️ Failed to clear range before write, proceeding to write anyway:', clearErr);
+    }
+
     // Prepare data untuk spreadsheet (header + data)
     const spreadsheetData = [
       ['Nama menu', 'Harga', 'Stok'], // Header

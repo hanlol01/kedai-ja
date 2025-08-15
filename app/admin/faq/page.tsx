@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, HelpCircle, Filter, X, CheckCircle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Search, Edit, Trash2, HelpCircle, Filter, X, CheckCircle, AlertCircle, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface FAQ {
   _id: string;
@@ -237,8 +238,15 @@ export default function FAQPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-black">Kelola FAQ</h1>
-            <p className="mt-2 text-gray-600 text-black">Kelola pertanyaan dan jawaban yang sering ditanyakan</p>
+            <Link
+              href="/admin/about-us"
+              className="inline-flex items-center bg-blue-100 hover:bg-orange-100 text-gray-700 hover:text-orange-600 px-4 py-2 rounded-lg font-semibold shadow transition-colors duration-200 mb-4"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Kembali
+            </Link>
+            <h1 className="text-3xl font-bold text-white">Kelola FAQ</h1>
+            <p className="mt-2 text-gray-600 text-white">Kelola pertanyaan dan jawaban yang sering ditanyakan</p>
           </div>
           <button
             onClick={openAddModal}

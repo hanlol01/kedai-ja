@@ -31,9 +31,16 @@ async function connectDB() {
     const opts = {
       bufferCommands: false,
       dbName: 'mongodbVSCodePlaygroundDB',
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      maxPoolSize: 5, // Kurangi pool size untuk mengurangi overhead
+      minPoolSize: 1, // Minimal pool size
+      serverSelectionTimeoutMS: 3000, // Kurangi dari 5000 ke 3000
+      socketTimeoutMS: 10000, // Kurangi dari 45000 ke 10000
+      connectTimeoutMS: 3000, // Tambahkan connect timeout
+      maxIdleTimeMS: 30000, // Kurangi idle time
+      retryWrites: true,
+      retryReads: true,
+      // Tambahkan heartbeat frequency untuk deteksi koneksi yang lebih cepat
+      heartbeatFrequencyMS: 10000,
     };
 
     cached!.promise = mongoose.connect(MONGODB_URI!, opts);

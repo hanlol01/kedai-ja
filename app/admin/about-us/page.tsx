@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Save, AlertCircle, Upload, X, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 
 interface AboutUsData {
@@ -53,6 +54,67 @@ export default function AdminAboutUs() {
     spotTempatDuduk: null
   });
 
+  // Helper untuk cek apakah sedang berjalan di Vercel
+  const isVercel = typeof window !== 'undefined' && !!process.env.NEXT_PUBLIC_VERCEL;
+
+  const isValidImageFile = (file: File) => {
+    const isImage = file.type.startsWith('image/');
+    // Di Vercel batasi 4MB, di non-Vercel 15MB
+    const maxSize = isVercel ? 4 * 1024 * 1024 : 15 * 1024 * 1024;
+    const isSmallEnough = file.size <= maxSize;
+    return { isImage, isSmallEnough, maxSize };
+  };
+
+  // Upload gambar ke GridFS tanpa kompresi
+  const uploadToGridFS = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('/api/uploads/gridfs', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Gagal mengunggah gambar');
+    }
+    
+    const result = await response.json();
+    return result.url; // URL ke file di GridFS
+  };
+  
+  // Kompresi gambar di sisi client untuk galeri saja (bukan untuk gambar utama)
+  const compressImage = (file: File, maxWidth = 800, quality = 0.6): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ratio = img.width / img.height;
+        const targetWidth = Math.min(maxWidth, img.width);
+        const targetHeight = Math.round(targetWidth / ratio);
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context not available'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        const mimeType = 'image/jpeg';
+        const dataUrl = canvas.toDataURL(mimeType, quality);
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.src = reader.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   useEffect(() => {
     fetchAboutUs();
   }, []);
@@ -91,23 +153,62 @@ export default function AdminAboutUs() {
     setSuccess('');
     setSaving(true);
 
+    // Implementasi fungsi retry
+    const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2) => {
+      let retries = 0;
+      while (retries <= maxRetries) {
+        try {
+          const response = await fetch(url, options);
+          const data = await response.json();
+          
+          if (!response.ok) {
+            // Jika server timeout/503, coba lagi
+            if (response.status === 503 && retries < maxRetries) {
+              retries++;
+              // Tunggu 2 detik sebelum mencoba lagi
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              continue;
+            }
+            throw new Error(data.error || 'Gagal menyimpan. Mohon coba lagi.');
+          }
+          
+          return { response, data };
+        } catch (err) {
+          if (retries === maxRetries) throw err;
+          retries++;
+          // Tunggu sebelum mencoba lagi (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 2000 * retries));
+        }
+      }
+      throw new Error('Gagal melakukan request setelah beberapa percobaan');
+    };
+
     try {
       // Convert image files to base64 if they exist
       const updatedImages = { ...aboutUs.images };
       
       for (const [key, file] of Object.entries(imageFiles)) {
         if (file && ['image1', 'image2', 'image3', 'image4'].includes(key)) {
-          const reader = new FileReader();
-          const filePromise = new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-          });
-          reader.readAsDataURL(file);
-          updatedImages[key as 'image1' | 'image2' | 'image3' | 'image4'] = await filePromise;
+          // Validasi 4MB saat di Vercel
+          const { isImage, isSmallEnough, maxSize } = isValidImageFile(file);
+          if (!isImage) {
+            setError('File harus berupa gambar');
+            return;
+          }
+          if (!isSmallEnough) {
+            const limitMb = Math.round(maxSize / (1024 * 1024));
+            setError(`Ukuran gambar terlalu besar (maks ${limitMb}MB)`);
+            if (isVercel) alert(`Ukuran gambar terlalu besar (maks ${limitMb}MB di Vercel)`);
+            return;
+          }
+
+          // Upload gambar ke GridFS tanpa kompresi, simpan URL-nya
+          const fileUrl = await uploadToGridFS(file);
+          updatedImages[key as 'image1' | 'image2' | 'image3' | 'image4'] = fileUrl;
         }
       }
 
-      const response = await fetch('/api/about-us', {
+      const { response, data } = await fetchWithRetry('/api/about-us', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,12 +218,6 @@ export default function AdminAboutUs() {
           images: updatedImages
         }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
 
       setSuccess('Data tentang kami berhasil disimpan');
       setImageFiles({
@@ -137,7 +232,7 @@ export default function AdminAboutUs() {
       // Update local state with new data
       setAboutUs(data.aboutUs);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Terjadi kesalahan');
+      setError(error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan data.');
     } finally {
       setSaving(false);
     }
@@ -151,6 +246,19 @@ export default function AdminAboutUs() {
   };
 
   const handleImageChange = (imageKey: string, file: File | null) => {
+    if (file) {
+      const { isImage, isSmallEnough, maxSize } = isValidImageFile(file);
+      if (!isImage) {
+        setError('File harus berupa gambar');
+        return;
+      }
+      if (!isSmallEnough) {
+        const limitMb = Math.round(maxSize / (1024 * 1024));
+        setError(`Ukuran gambar terlalu besar (maks ${limitMb}MB)`);
+        if (isVercel) alert(`Ukuran gambar terlalu besar (maks ${limitMb}MB di Vercel)`);
+        return;
+      }
+    }
     setImageFiles(prev => ({
       ...prev,
       [imageKey]: file
@@ -187,13 +295,19 @@ export default function AdminAboutUs() {
 
   const addGalleryImage = async (category: 'lingkunganKedai' | 'spotTempatDuduk', file: File) => {
     try {
-      const reader = new FileReader();
-      const filePromise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(file);
-      const base64Image = await filePromise;
+      const { isImage, isSmallEnough, maxSize } = isValidImageFile(file);
+      if (!isImage) {
+        setError('File harus berupa gambar');
+        return;
+      }
+      if (!isSmallEnough) {
+        const limitMb = Math.round(maxSize / (1024 * 1024));
+        setError(`Ukuran gambar terlalu besar (maks ${limitMb}MB)`);
+        if (isVercel) alert(`Ukuran gambar terlalu besar (maks ${limitMb}MB di Vercel)`);
+        return;
+      }
+      // Kompres sebelum ditambahkan ke galeri (lebih kecil untuk performa)
+      const base64Image = await compressImage(file, 600, 0.5);
 
       setAboutUs(prev => ({
         ...prev,
@@ -206,6 +320,7 @@ export default function AdminAboutUs() {
       setError('Gagal menambahkan gambar');
     }
   };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -220,8 +335,8 @@ export default function AdminAboutUs() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Pengaturan Tentang Kami</h1>
-        <p className="text-gray-600 mt-2">Kelola konten, gambar, dan galeri untuk bagian tentang kami</p>
+        <h1 className="text-3xl font-bold text-white-900">Pengaturan Tentang Kami</h1>
+        <p className="text-white-600 mt-2">Kelola konten, gambar, dan galeri untuk bagian tentang kami</p>
       </div>
 
       {/* Tab Navigation */}
@@ -233,7 +348,7 @@ export default function AdminAboutUs() {
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'basic'
                   ? 'border-orange-500 text-orange-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-white-500 hover:text-white-700 hover:border-white-300'
               }`}
             >
               Informasi Dasar
@@ -243,11 +358,17 @@ export default function AdminAboutUs() {
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'company'
                   ? 'border-orange-500 text-orange-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-white-500 hover:text-white-700 hover:border-white-300'
               }`}
             >
               Informasi Tentang Kami
             </button>
+            <Link
+              href="/admin/faq"
+              className="py-2 px-1 border-b-2 font-medium text-sm border-transparent text-white-500 hover:text-white-700 hover:border-white-300"
+            >
+              FAQ
+            </Link>
           </nav>
         </div>
       </div>
@@ -358,7 +479,7 @@ export default function AdminAboutUs() {
 
             {/* Images Section */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Gambar Tentang Kami (Homepage)</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 text-white">Gambar Tentang Kami (Homepage)</h2>
               <p className="text-gray-600 mb-6">Upload 4 gambar untuk ditampilkan di bagian tentang kami di homepage</p>
               
               {/* Informasi Dasar: Upload 4 gambar (max 4, horizontal scroll) */}

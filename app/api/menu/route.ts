@@ -39,13 +39,14 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     
-    const { name, description, price, category, image, available } = await request.json();
+    const { name, description, price, category, subCategory, image, available } = await request.json();
 
     const menuItem = new MenuItem({
       name,
       description,
       price,
       category,
+      subCategory,
       image: image || '',
       available: available !== undefined ? available : true,
     });

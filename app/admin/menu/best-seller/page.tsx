@@ -4,12 +4,19 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, ChefHat, AlertCircle, Plus, X, Search, Filter } from 'lucide-react';
 
+// Sub kategori options berdasarkan kategori
+const SUB_CATEGORY_OPTIONS = {
+  Makanan: ['Menu Paket', 'Nusantara', 'Rice Bowl', 'Mie', 'Additional Menu', 'Aneka Tumis', 'Snack'],
+  Minuman: ['Coffee', 'Non Coffee', 'Tea', 'Smoothies', 'Soda', 'Fruit', 'Milkshake']
+};
+
 interface MenuItem {
   _id: string;
   name: string;
   description: string;
   price: number;
   category: 'Makanan' | 'Minuman';
+  subCategory: string;
   image?: string;
   available: boolean;
 }
@@ -23,6 +30,7 @@ export default function BestSellerManagement() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'Makanan' | 'Minuman'>('all');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
 
   useEffect(() => {
     fetchData();
@@ -112,8 +120,17 @@ export default function BestSellerManagement() {
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            item.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesSubCategory = selectedSubCategory === 'all' || item.subCategory === selectedSubCategory;
+      return matchesSearch && matchesCategory && matchesSubCategory;
     });
+
+  // Get available sub categories based on current category filter
+  const getAvailableSubCategories = () => {
+    if (selectedCategory === 'all') {
+      return [...SUB_CATEGORY_OPTIONS.Makanan, ...SUB_CATEGORY_OPTIONS.Minuman];
+    }
+    return SUB_CATEGORY_OPTIONS[selectedCategory];
+  };
 
   if (loading) {
     return (
@@ -139,8 +156,8 @@ export default function BestSellerManagement() {
             Kembali ke Menu
           </Link>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Best Seller</h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Pilih maksimal 6 menu terbaik untuk ditampilkan di homepage</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white-900">Kelola Best Seller</h1>
+            <p className="text-white-600 mt-2 text-sm sm:text-base">Pilih maksimal 6 menu terbaik untuk ditampilkan di homepage</p>
           </div>
         </div>
         <button
@@ -249,6 +266,9 @@ export default function BestSellerManagement() {
                         }`}>
                           {item.category}
                         </span>
+                        <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
+                          {item.subCategory}
+                        </span>
                       </div>
                     </div>
                     <div className="mt-2 sm:mt-0 sm:ml-4 flex-shrink-0 flex items-center justify-end">
@@ -301,29 +321,65 @@ export default function BestSellerManagement() {
                 />
               </div>
               
-              {/* Category Filter */}
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm font-medium text-gray-700 flex items-center">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter:
-                </span>
-                {[
-                  { id: 'all', name: 'Semua Menu' },
-                  { id: 'Makanan', name: 'Makanan' },
-                  { id: 'Minuman', name: 'Minuman' }
-                ].map((category) => (
+              {/* Filter dan Sub Kategori sejajar */}
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Category Filter */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-gray-700 flex items-center">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter:
+                  </span>
+                  {[
+                    { id: 'all', name: 'Semua Menu' },
+                    { id: 'Makanan', name: 'Makanan' },
+                    { id: 'Minuman', name: 'Minuman' }
+                  ].map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        setSelectedCategory(category.id as 'all' | 'Makanan' | 'Minuman');
+                        setSelectedSubCategory('all');
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
+                        selectedCategory === category.id
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sub Category Filter */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-gray-700 flex items-center">
+                    Sub Kategori:
+                  </span>
                   <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id as 'all' | 'Makanan' | 'Minuman')}
+                    onClick={() => setSelectedSubCategory('all')}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
-                      selectedCategory === category.id
+                      selectedSubCategory === 'all'
                         ? 'bg-orange-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {category.name}
+                    Semua
                   </button>
-                ))}
+                  {getAvailableSubCategories().map((subCat) => (
+                    <button
+                      key={subCat}
+                      onClick={() => setSelectedSubCategory(subCat)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
+                        selectedSubCategory === subCat
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {subCat}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             
@@ -332,7 +388,7 @@ export default function BestSellerManagement() {
                 <div className="text-center py-12">
                   <Star className="h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                    {searchQuery || selectedCategory !== 'all' 
+                    {searchQuery || selectedCategory !== 'all' || selectedSubCategory !== 'all'
                       ? 'Tidak ada menu yang sesuai filter'
                       : bestSellerIds.length >= 6 
                         ? 'Semua slot best seller sudah terisi' 
@@ -374,6 +430,11 @@ export default function BestSellerManagement() {
                               : 'bg-blue-100 text-blue-800'
                           }`}>
                             {item.category}
+                          </span>
+                        </div>
+                        <div className="mt-1">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
+                            {item.subCategory}
                           </span>
                         </div>
                       </div>

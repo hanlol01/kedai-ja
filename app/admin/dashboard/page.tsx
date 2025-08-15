@@ -116,10 +116,13 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full">
         <div className="text-center py-16">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="relative mx-auto">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-200/20 border-t-primary-500 mx-auto"></div>
+            <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-secondary-400/50 animate-pulse mx-auto"></div>
+          </div>
+          <p className="mt-6 text-gray-300">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -127,14 +130,14 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full">
         <div className="text-center py-16">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Dashboard</h3>
-            <p className="text-red-600 mb-4">{error}</p>
+          <div className="bg-red-900/30 border border-red-700/30 rounded-lg p-6 backdrop-blur-sm">
+            <h3 className="text-lg font-semibold text-red-300 mb-2">Error Loading Dashboard</h3>
+            <p className="text-red-200 mb-4">{error}</p>
             <button
               onClick={fetchStats}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200"
             >
               Try Again
             </button>
@@ -145,24 +148,24 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Selamat datang di panel admin Kedai J.A</p>
+        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <p className="text-gray-300 mt-2">Selamat datang di panel admin Kedai J.A</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.title} className="bg-white rounded-lg shadow-md p-6">
+            <div key={card.title} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg p-6 hover:bg-gray-700/50 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{card.title}</p>
-                  <p className="text-3xl font-bold text-gray-900">{card.value}</p>
+                  <p className="text-sm font-medium text-gray-300">{card.title}</p>
+                  <p className="text-3xl font-bold text-white mt-1">{card.value}</p>
                 </div>
-                <div className={`${card.bgColor} rounded-full p-3`}>
-                  <Icon className={`h-6 w-6 ${card.textColor}`} />
+                <div className="bg-gray-900/70 rounded-xl p-3 border border-gray-700/50">
+                  <Icon className="h-6 w-6 text-primary-400" />
                 </div>
               </div>
             </div>
@@ -171,61 +174,61 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
           <div className="space-y-3">
             <a
               href="/admin/menu"
-              className="flex items-center space-x-3 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors duration-200"
+              className="flex items-center space-x-3 p-3 bg-primary-900/30 rounded-lg hover:bg-primary-800/50 transition-colors duration-200 border border-primary-700/30"
             >
-              <Menu className="h-5 w-5 text-orange-500" />
-              <span className="text-gray-700">Kelola Menu</span>
+              <Menu className="h-5 w-5 text-primary-400" />
+              <span className="text-gray-200">Kelola Menu</span>
             </a>
             <a
               href="/admin/settings"
-              className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className="flex items-center space-x-3 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-600/50 transition-colors duration-200 border border-gray-600/30"
             >
-              <Users className="h-5 w-5 text-gray-500" />
-              <span className="text-gray-700">Pengaturan Restoran</span>
+              <Users className="h-5 w-5 text-gray-300" />
+              <span className="text-gray-200">Pengaturan Restoran</span>
             </a>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-white mb-4">Recent Activity</h2>
           <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-green-500" />
+            <div className="flex items-center space-x-3 p-3 bg-gray-700/50 rounded-lg border border-gray-600/30">
+              <TrendingUp className="h-5 w-5 text-green-400" />
               <div>
-                <p className="text-sm font-medium text-gray-900">Dashboard accessed</p>
-                <p className="text-xs text-gray-500">Just now</p>
+                <p className="text-sm font-medium text-gray-200">Dashboard accessed</p>
+                <p className="text-xs text-gray-400">Just now</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <Clock className="h-5 w-5 text-blue-500" />
+            <div className="flex items-center space-x-3 p-3 bg-gray-700/50 rounded-lg border border-gray-600/30">
+              <Clock className="h-5 w-5 text-blue-400" />
               <div>
-                <p className="text-sm font-medium text-gray-900">System status: Online</p>
-                <p className="text-xs text-gray-500">All services running</p>
+                <p className="text-sm font-medium text-gray-200">System status: Online</p>
+                <p className="text-xs text-gray-400">All services running</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">System Status</h2>
+      <div className="mt-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg p-6">
+        <h2 className="text-xl font-bold text-white mb-4">System Status</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">Database Connected</span>
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-300">Database Connected</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">API Services Running</span>
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-300">API Services Running</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">Admin Panel Active</span>
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-300">Admin Panel Active</span>
           </div>
         </div>
       </div>

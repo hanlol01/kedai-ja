@@ -19,7 +19,7 @@ export async function PUT(
 
     await connectDB();
     
-    const { name, description, price, category, image, available } = await request.json();
+    const { name, description, price, category, subCategory, image, available } = await request.json();
 
     const menuItem = await MenuItem.findByIdAndUpdate(
       params.id,
@@ -28,6 +28,7 @@ export async function PUT(
         description,
         price,
         category,
+        subCategory,
         image: image || '',
         available: available !== undefined ? available : true,
       },

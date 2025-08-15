@@ -18,7 +18,23 @@ export async function decrypt(input: string): Promise<any> {
   return payload;
 }
 
-export async function getSession(request: NextRequest) {
+export async function getSession(request?: NextRequest) {
+  // Jika request tidak diberikan, coba ambil dari headers
+  if (!request) {
+    // Untuk API routes yang tidak memiliki akses ke request object
+    const { cookies } = require('next/headers');
+    try {
+      const session = cookies().get('token')?.value;
+      if (!session) return null;
+      
+      return await decrypt(session);
+    } catch (error) {
+      console.error('Session error:', error);
+      return null;
+    }
+  }
+
+  // Jika request diberikan, gunakan seperti biasa
   const session = request.cookies.get('token')?.value;
   if (!session) return null;
   

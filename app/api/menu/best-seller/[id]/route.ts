@@ -28,6 +28,16 @@ export async function DELETE(
       );
     }
     
+    // Invalidate cache setelah perubahan
+    // (route GET best-seller menggunakan cache ringan)
+    try {
+      const mod = await import('../route');
+      // @ts-ignore
+      mod.cachedBestSellers = null;
+      // @ts-ignore
+      mod.cacheTimeBestSellers = 0;
+    } catch {}
+
     return NextResponse.json({ 
       message: 'Menu berhasil dihapus dari best seller' 
     });

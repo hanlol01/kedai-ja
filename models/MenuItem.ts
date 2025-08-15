@@ -6,6 +6,7 @@ export interface IMenuItem {
   description: string;
   price: number;
   category: 'Makanan' | 'Minuman';
+  subCategory: string;
   image?: string;
   available: boolean;
   createdAt?: Date;
@@ -32,6 +33,11 @@ const MenuItemSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Category is required'],
     enum: ['Makanan', 'Minuman'],
+  },
+  subCategory: {
+    type: String,
+    required: [true, 'Sub category is required'],
+    trim: true,
   },
   image: {
     type: String,

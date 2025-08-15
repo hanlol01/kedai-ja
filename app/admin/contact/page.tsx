@@ -92,8 +92,8 @@ export default function AdminContacts() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl text-center font-bold text-gray-900">Pesan dan Masukan Pelanggan</h1>
-        <p className="text-gray-600 mt-2 text-center">Lihat semua pesan yang dikirim melalui form kontak</p>
+        <h1 className="text-3xl text-center font-bold text-white-900">Pesan dan Masukan Pelanggan</h1>
+        <p className="text-white-600 mt-2 text-center">Lihat semua pesan yang dikirim melalui form kontak</p>
       </div>
 
       {/* Statistics */}

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChefHat, Home, Menu, Settings, LogOut, User, MenuIcon, X, Star, Mail, HelpCircle } from 'lucide-react';
+import { ChefHat, Home, Menu, Settings, LogOut, User, MenuIcon, X, Star, Mail, HelpCircle, Camera } from 'lucide-react';
 
 export default function AdminNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,6 +25,7 @@ export default function AdminNavbar() {
   const navItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
     { name: 'Menu', href: '/admin/menu', icon: Menu },
+    { name: 'Gallery', href: '/admin/gallery', icon: Camera },
     { name: 'Testimonials', href: '/admin/testimonials', icon: Star },
     { name: 'Pesan Pengguna', href: '/admin/contact', icon: Mail },
     // Settings handled separately as dropdown

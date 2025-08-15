@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, ChefHat, AlertCircle, X, Star, Search, Filter as FilterIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, ChefHat, AlertCircle, X, Star, Search, Filter as FilterIcon, ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
+
+// Sub kategori options berdasarkan kategori
+const SUB_CATEGORY_OPTIONS = {
+  Makanan: ['Menu Paket', 'Nusantara', 'Rice Bowl', 'Mie', 'Additional Menu', 'Aneka Tumis', 'Snack'],
+  Minuman: ['Coffee', 'Non Coffee', 'Tea', 'Smoothies', 'Soda', 'Fruit', 'Milkshake']
+};
 
 interface MenuItem {
   _id: string;
@@ -10,8 +16,10 @@ interface MenuItem {
   description: string;
   price: number;
   category: 'Makanan' | 'Minuman';
+  subCategory: string;
   image?: string;
   available: boolean;
+  createdAt?: string | Date;
 }
 
 interface MenuFormData {
@@ -19,6 +27,7 @@ interface MenuFormData {
   description: string;
   price: number;
   category: 'Makanan' | 'Minuman';
+  subCategory: string;
   image: string;
   available: boolean;
 }
@@ -33,6 +42,7 @@ export default function AdminMenu() {
     description: '',
     price: 0,
     category: 'Makanan',
+    subCategory: '',
     image: '',
     available: true,
   });
@@ -42,8 +52,12 @@ export default function AdminMenu() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'Makanan' | 'Minuman'>('all');
+  const [filterSubCategory, setFilterSubCategory] = useState<string>('all');
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageSrc, setModalImageSrc] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc'); // asc = terlama dulu
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     fetchMenuItems();
@@ -103,6 +117,7 @@ export default function AdminMenu() {
         description: '',
         price: 0,
         category: 'Makanan',
+        subCategory: '',
         image: '',
         available: true,
       });
@@ -120,6 +135,7 @@ export default function AdminMenu() {
       description: item.description,
       price: item.price,
       category: item.category,
+      subCategory: item.subCategory,
       image: item.image || '',
       available: item.available,
     });
@@ -153,17 +169,45 @@ export default function AdminMenu() {
       description: '',
       price: 0,
       category: 'Makanan',
+      subCategory: '',
       image: '',
       available: true,
     });
   };
 
-  // Filter menu berdasarkan search dan kategori
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Sort, filter, paginate
+  const processedMenuItems = menuItems
+    .slice()
+    .sort((a, b) => {
+      const at = new Date(a.createdAt || 0).getTime();
+      const bt = new Date(b.createdAt || 0).getTime();
+      return sortDirection === 'asc' ? at - bt : bt - at;
+    })
+    .filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
+      const matchesSubCategory = filterSubCategory === 'all' || item.subCategory === filterSubCategory;
+      return matchesSearch && matchesCategory && matchesSubCategory;
+    });
+
+  const totalPages = Math.max(1, Math.ceil(processedMenuItems.length / itemsPerPage));
+  const currentPageSafe = Math.min(currentPage, totalPages);
+  const pageStart = (currentPageSafe - 1) * itemsPerPage;
+  const pageEnd = pageStart + itemsPerPage;
+  const paginatedMenuItems = processedMenuItems.slice(pageStart, pageEnd);
+
+  // Reset halaman ke 1 saat filter/sort/search berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterCategory, filterSubCategory, sortDirection]);
+
+  // Get available sub categories based on current category filter
+  const getAvailableSubCategories = () => {
+    if (filterCategory === 'all') {
+      return [...SUB_CATEGORY_OPTIONS.Makanan, ...SUB_CATEGORY_OPTIONS.Minuman];
+    }
+    return SUB_CATEGORY_OPTIONS[filterCategory];
+  };
 
   if (loading) {
     return (
@@ -180,13 +224,13 @@ export default function AdminMenu() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
-          <h1 className="text-3xl font-bold text-gray-900 w-full sm:w-auto">Kelola Menu</h1>
-          <p className="text-gray-600 mt-2 w-full sm:w-auto">Kelola menu makanan dan minuman</p>
+          <h1 className="text-3xl font-bold text-white-900 w-full sm:w-auto">Kelola Menu</h1>
+          <p className="text-white-600 mt-2 w-full sm:w-auto">Kelola menu makanan dan minuman</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto mt-4 sm:mt-0 justify-center sm:justify-end items-stretch sm:items-center">
         <button
           onClick={() => setShowForm(true)}
-            className="w-full sm:w-auto bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-orange-600 transition-colors duration-200 font-semibold"
+            className="w-full sm:w-auto bg-green-500 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600 transition-colors duration-200 font-semibold"
         >
           <Plus className="h-4 w-4" />
             <span>Tambah Menu</span>
@@ -276,11 +320,33 @@ export default function AdminMenu() {
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as 'Makanan' | 'Minuman' })}
+                  onChange={(e) => {
+                    const newCategory = e.target.value as 'Makanan' | 'Minuman';
+                    setFormData({ ...formData, category: newCategory, subCategory: '' });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                 >
                   <option value="Makanan">Makanan</option>
                   <option value="Minuman">Minuman</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sub Category *
+                </label>
+                <select
+                  value={formData.subCategory}
+                  onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
+                >
+                  <option value="">Pilih Sub Kategori</option>
+                  {SUB_CATEGORY_OPTIONS[formData.category].map((subCat) => (
+                    <option key={subCat} value={subCat}>
+                      {subCat}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -352,29 +418,66 @@ export default function AdminMenu() {
             />
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap items-center mt-2 md:mt-0">
-          <span className="text-gray-700 text-sm flex items-center mr-1">
+      </div>
+
+      {/* Filter dan Sub Kategori sejajar */}
+      <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        {/* Filter Category */}
+        <div className="flex gap-2 flex-wrap items-center">
+          <span className="text-white-700 text-sm flex items-center mr-1">
             <FilterIcon className="h-4 w-4 mr-1" />
             Filter :
           </span>
           <button
-            onClick={() => setFilterCategory('all')}
+            onClick={() => {
+              setFilterCategory('all');
+              setFilterSubCategory('all');
+            }}
             className={`px-4 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterCategory === 'all' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
           >
             Semua Menu
           </button>
           <button
-            onClick={() => setFilterCategory('Makanan')}
+            onClick={() => {
+              setFilterCategory('Makanan');
+              setFilterSubCategory('all');
+            }}
             className={`px-4 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterCategory === 'Makanan' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
           >
             Makanan
           </button>
           <button
-            onClick={() => setFilterCategory('Minuman')}
+            onClick={() => {
+              setFilterCategory('Minuman');
+              setFilterSubCategory('all');
+            }}
             className={`px-4 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterCategory === 'Minuman' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
           >
             Minuman
           </button>
+        </div>
+
+        {/* Sub Category Filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-white-700 text-sm flex items-center mr-1">
+            <FilterIcon className="h-4 w-4 mr-1" />
+            Sub Kategori :
+          </span>
+          <button
+            onClick={() => setFilterSubCategory('all')}
+            className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterSubCategory === 'all' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
+          >
+            Semua
+          </button>
+          {getAvailableSubCategories().map((subCat) => (
+            <button
+              key={subCat}
+              onClick={() => setFilterSubCategory(subCat)}
+              className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors duration-200 focus:outline-none ${filterSubCategory === subCat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
+            >
+              {subCat}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -385,16 +488,29 @@ export default function AdminMenu() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gambar</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <div className="flex items-center gap-2">
+                    <span>Nama</span>
+                    <button
+                      type="button"
+                      onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                      className={`p-1 rounded ${sortDirection==='desc' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-100'}`}
+                      title={sortDirection === 'desc' ? 'Urut terbaru (klik untuk ubah ke terlama)' : 'Urut terlama (klik untuk ubah ke terbaru)'}
+                    >
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sub Kategori</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMenuItems.map((item) => (
+              {paginatedMenuItems.map((item) => (
                 <tr key={item._id} className="align-middle">
                   <td className="px-4 py-2">
                     {item.image ? (
@@ -413,6 +529,11 @@ export default function AdminMenu() {
                       item.category === 'Makanan' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
                     }`}>
                       {item.category}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 align-middle">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
+                      {item.subCategory}
                     </span>
                   </td>
                   <td className="px-4 py-2 align-middle">
@@ -452,14 +573,14 @@ export default function AdminMenu() {
             <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowImageModal(false)}>
               <X className="h-6 w-6" />
             </button>
-            <img src={modalImageSrc} alt="Preview" className="w-full h-auto max-h-[70vh] object-contain rounded" />
+            <img src={modalImageSrc || ''} alt="Preview" className="w-full h-auto max-h-[70vh] object-contain rounded" />
           </div>
         </div>
       )}
 
       {/* Grid untuk mobile */}
       <div className="grid grid-cols-1 gap-6 md:hidden">
-        {filteredMenuItems.map((item) => (
+        {paginatedMenuItems.map((item) => (
           <div key={item._id} className="bg-white rounded-lg shadow-md overflow-hidden p-4 flex flex-col">
             <div className="h-36 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
               {item.image ? (
@@ -495,6 +616,11 @@ export default function AdminMenu() {
                   {item.category}
                 </span>
               </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-semibold">
+                  Sub: {item.subCategory}
+                </span>
+              </div>
               </div>
               <div className="flex space-x-2 mt-2">
                 <button
@@ -517,17 +643,34 @@ export default function AdminMenu() {
         ))}
       </div>
 
-      {filteredMenuItems.length === 0 && (
+      {processedMenuItems.length === 0 && (
         <div className="text-center py-16">
           <img src="/logo-bg.png" alt="Logo Kedai J.A" className="h-16 w-16 text-gray-400 mx-auto mb-4" style={{objectFit: 'contain'}} />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No menu items found</h3>
-          <p className="text-gray-600 mb-4">Start by adding your first menu item</p>
+          <h3 className="text-xl font-semibold text-white-900 mb-2">Tidak ada menu yang ditemukan</h3>
+          <p className="text-white-600 mb-4">Tambahkan menu pertama Anda</p> 
           <button
             onClick={() => setShowForm(true)}
             className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors duration-200"
           >
-            Add Menu Item
+            Tambahkan Menu Item
           </button>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {processedMenuItems.length > itemsPerPage && (
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            className="px-3 py-1 rounded bg-gray-100 text-gray-700 hover:bg-orange-100"
+            disabled={currentPageSafe === 1}
+          >Prev</button>
+          <span className="text-sm text-gray-700">Halaman {currentPageSafe} dari {totalPages}</span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            className="px-3 py-1 rounded bg-gray-100 text-gray-700 hover:bg-orange-100"
+            disabled={currentPageSafe === totalPages}
+          >Next</button>
         </div>
       )}
     </div>

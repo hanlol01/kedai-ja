@@ -114,10 +114,10 @@ export default function AboutUsSection() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
       {/* Title Section (pindah ke atas gambar) */}
       <div className="mb-4 md:mb-0 col-span-1 lg:col-span-2" data-aos="fade-up">
-        <p className="text-orange-500 font-semibold text-lg mb-2 italic text-center">
+        <p className="text-orange-500 font-bold text-lg mb-2 text-center">
           {aboutUs.title}
         </p>
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-white-900 mb-4 text-center">
           {aboutUs.subtitle}
         </h2>
       </div>
@@ -206,10 +206,10 @@ export default function AboutUsSection() {
       <div className="space-y-6" data-aos="fade-left" data-aos-delay="300">
         {/* Description */}
         <div className="space-y-4">
-          <p className="text-gray-600 leading-relaxed text-justify">
+          <p className="text-white-600 leading-relaxed text-justify">
             {aboutUs.description}
           </p>
-          <p className="text-gray-600 leading-relaxed text-justify">
+          <p className="text-white-600 leading-relaxed text-justify">
             {aboutUs.secondDescription}
           </p>
         </div>
@@ -221,8 +221,8 @@ export default function AboutUsSection() {
               {aboutUs.yearsOfExperience}
             </div>
             <div>
-              <p className=" font-semibold text-gray-900 uppercase tracking-wide">Tahun kami</p>
-              <p className=" text-sm text-gray-500 uppercase tracking-wide">Berdiri</p>
+              <p className=" font-semibold text-white-900 uppercase tracking-wide">Tahun kami</p>
+              <p className=" text-sm text-white-500 uppercase tracking-wide">Berdiri</p>
             </div>
           </div>
 
@@ -231,8 +231,8 @@ export default function AboutUsSection() {
               {aboutUs.masterChefs}
             </div>
             <div>
-              <p className=" font-semibold text-gray-900 uppercase tracking-wide">Spot Outdoor</p>
-              <p className=" text-sm text-gray-500 uppercase tracking-wide">Menikmati Hidangan</p>
+              <p className=" font-semibold text-white-900 uppercase tracking-wide">Spot Outdoor</p>
+              <p className=" text-sm text-white-500 uppercase tracking-wide">Menikmati Hidangan</p>
             </div>
           </div>
         </div>
