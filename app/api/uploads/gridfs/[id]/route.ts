@@ -8,6 +8,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   try {
     await connectDB();
     const db = mongoose.connection.db;
+    
+    // Type safety check untuk database connection
+    if (!db) {
+      console.error('Database connection not available');
+      return new Response('Database connection error', { status: 500 });
+    }
+    
     const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
 
     let objectId: mongoose.Types.ObjectId;
@@ -51,6 +58,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     await connectDB();
     const db = mongoose.connection.db;
+    
+    // Type safety check untuk database connection
+    if (!db) {
+      console.error('Database connection not available');
+      return NextResponse.json({ error: 'Database connection error' }, { status: 500 });
+    }
+    
     const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
 
     let objectId: mongoose.Types.ObjectId;
