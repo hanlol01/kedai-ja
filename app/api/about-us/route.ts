@@ -77,9 +77,33 @@ export async function GET() {
     // 6. Update cache
     setCache(aboutUs);
     
+    // Pastikan data yang dikembalikan memiliki semua properti yang diharapkan
+    const aboutUsObj = aboutUs as any;
+    const formattedAboutUs = {
+      title: aboutUsObj.title || FALLBACK_DATA.title,
+      subtitle: aboutUsObj.subtitle || FALLBACK_DATA.subtitle,
+      description: aboutUsObj.description || FALLBACK_DATA.description,
+      secondDescription: aboutUsObj.secondDescription || FALLBACK_DATA.secondDescription,
+      companyDescription: aboutUsObj.companyDescription || FALLBACK_DATA.companyDescription,
+      yearsOfExperience: aboutUsObj.yearsOfExperience || FALLBACK_DATA.yearsOfExperience,
+      masterChefs: aboutUsObj.masterChefs || FALLBACK_DATA.masterChefs,
+      // Pastikan struktur images lengkap
+      images: {
+        image1: aboutUsObj.images?.image1 || '',
+        image2: aboutUsObj.images?.image2 || '',
+        image3: aboutUsObj.images?.image3 || '',
+        image4: aboutUsObj.images?.image4 || '',
+        lingkunganKedai: Array.isArray(aboutUsObj.images?.lingkunganKedai) ? aboutUsObj.images.lingkunganKedai : [],
+        spotTempatDuduk: Array.isArray(aboutUsObj.images?.spotTempatDuduk) ? aboutUsObj.images.spotTempatDuduk : []
+      }
+    };
+    
+    // Update cache dengan data yang sudah diformat
+    setCache(formattedAboutUs);
+    
     return NextResponse.json({ 
       success: true, 
-      aboutUs,
+      aboutUs: formattedAboutUs,
       fromDatabase: true
     });
     
@@ -89,9 +113,28 @@ export async function GET() {
     // 7. Gunakan cache jika ada error tapi cache tersedia
     const cacheState = getCache();
     if (cacheState.data) {
+      // Pastikan format cache juga lengkap
+      const cacheData = cacheState.data as any;
+      const formattedCacheData = {
+        title: cacheData.title || FALLBACK_DATA.title,
+        subtitle: cacheData.subtitle || FALLBACK_DATA.subtitle,
+        description: cacheData.description || FALLBACK_DATA.description,
+        secondDescription: cacheData.secondDescription || FALLBACK_DATA.secondDescription,
+        companyDescription: cacheData.companyDescription || FALLBACK_DATA.companyDescription,
+        yearsOfExperience: cacheData.yearsOfExperience || FALLBACK_DATA.yearsOfExperience,
+        masterChefs: cacheData.masterChefs || FALLBACK_DATA.masterChefs,
+        images: {
+          image1: cacheData.images?.image1 || '',
+          image2: cacheData.images?.image2 || '',
+          image3: cacheData.images?.image3 || '',
+          image4: cacheData.images?.image4 || '',
+          lingkunganKedai: Array.isArray(cacheData.images?.lingkunganKedai) ? cacheData.images.lingkunganKedai : [],
+          spotTempatDuduk: Array.isArray(cacheData.images?.spotTempatDuduk) ? cacheData.images.spotTempatDuduk : []
+        }
+      };
       return NextResponse.json({ 
         success: true, 
-        aboutUs: cacheState.data,
+        aboutUs: formattedCacheData,
         fromCache: true,
         note: 'Served from cache due to database error'
       });

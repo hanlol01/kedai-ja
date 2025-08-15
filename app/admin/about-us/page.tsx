@@ -121,25 +121,56 @@ export default function AdminAboutUs() {
 
   const fetchAboutUs = async () => {
     try {
-      const response = await fetch('/api/about-us');
+      // Menambahkan timestamp untuk menghindari cache browser
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/about-us?t=${timestamp}`);
       const data = await response.json();
-      setAboutUs(data.aboutUs || {
-        title: 'Tentang',
-        subtitle: 'Seputar Kedai J.A',
-        description: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
-        secondDescription: 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
-        companyDescription: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
-        yearsOfExperience: 7,
-        masterChefs: 25,
-        images: {
-          image1: '',
-          image2: '',
-          image3: '',
-          image4: '',
-          lingkunganKedai: [],
-          spotTempatDuduk: []
-        }
-      });
+      
+      console.log("Fetched aboutUs data:", data);
+      
+      if (data.success && data.aboutUs) {
+        // Pastikan data memiliki struktur yang lengkap
+        const aboutUsData = {
+          title: data.aboutUs.title || 'Tentang',
+          subtitle: data.aboutUs.subtitle || 'Seputar Kedai J.A',
+          description: data.aboutUs.description || 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
+          secondDescription: data.aboutUs.secondDescription || 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
+          companyDescription: data.aboutUs.companyDescription || 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
+          yearsOfExperience: data.aboutUs.yearsOfExperience || 7,
+          masterChefs: data.aboutUs.masterChefs || 25,
+          images: {
+            image1: data.aboutUs.images?.image1 || '',
+            image2: data.aboutUs.images?.image2 || '',
+            image3: data.aboutUs.images?.image3 || '',
+            image4: data.aboutUs.images?.image4 || '',
+            lingkunganKedai: Array.isArray(data.aboutUs.images?.lingkunganKedai) ? data.aboutUs.images.lingkunganKedai : [],
+            spotTempatDuduk: Array.isArray(data.aboutUs.images?.spotTempatDuduk) ? data.aboutUs.images.spotTempatDuduk : []
+          }
+        };
+        
+        console.log("Setting aboutUs state with:", aboutUsData);
+        setAboutUs(aboutUsData);
+      } else {
+        // Fallback jika data tidak tersedia
+        setAboutUs({
+          title: 'Tentang',
+          subtitle: 'Seputar Kedai J.A',
+          description: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
+          secondDescription: 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
+          companyDescription: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
+          yearsOfExperience: 7,
+          masterChefs: 25,
+          images: {
+            image1: '',
+            image2: '',
+            image3: '',
+            image4: '',
+            lingkunganKedai: [],
+            spotTempatDuduk: []
+          }
+        });
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching about us:', error);
@@ -230,7 +261,24 @@ export default function AdminAboutUs() {
       });
       
       // Update local state with new data
-      setAboutUs(data.aboutUs);
+      if (data.aboutUs) {
+        console.log("Updating state with new data:", data.aboutUs);
+        // Pastikan struktur data lengkap sebelum update state
+        setAboutUs({
+          ...data.aboutUs,
+          images: {
+            image1: data.aboutUs.images?.image1 || '',
+            image2: data.aboutUs.images?.image2 || '',
+            image3: data.aboutUs.images?.image3 || '',
+            image4: data.aboutUs.images?.image4 || '',
+            lingkunganKedai: Array.isArray(data.aboutUs.images?.lingkunganKedai) ? data.aboutUs.images.lingkunganKedai : [],
+            spotTempatDuduk: Array.isArray(data.aboutUs.images?.spotTempatDuduk) ? data.aboutUs.images.spotTempatDuduk : []
+          }
+        });
+      }
+
+      // Reload data untuk memastikan state terupdate dengan benar dari server
+      setTimeout(() => fetchAboutUs(), 1000);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan data.');
     } finally {

@@ -41,10 +41,32 @@ export async function POST(request: NextRequest) {
     // Update cache setelah berhasil update
     setCache(aboutUs);
 
+    // Konversi ke format yang benar untuk frontend
+    const aboutUsObj = aboutUs as any;
+    const formattedResponse = {
+      _id: aboutUsObj._id || '',
+      title: aboutUsObj.title || '',
+      subtitle: aboutUsObj.subtitle || '',
+      description: aboutUsObj.description || '',
+      secondDescription: aboutUsObj.secondDescription || '',
+      companyDescription: aboutUsObj.companyDescription || '',
+      yearsOfExperience: aboutUsObj.yearsOfExperience || 0,
+      masterChefs: aboutUsObj.masterChefs || 0,
+      // Pastikan seluruh struktur images sesuai dengan yang diharapkan frontend
+      images: {
+        image1: aboutUsObj.images?.image1 || '',
+        image2: aboutUsObj.images?.image2 || '',
+        image3: aboutUsObj.images?.image3 || '',
+        image4: aboutUsObj.images?.image4 || '',
+        lingkunganKedai: Array.isArray(aboutUsObj.images?.lingkunganKedai) ? aboutUsObj.images.lingkunganKedai : [],
+        spotTempatDuduk: Array.isArray(aboutUsObj.images?.spotTempatDuduk) ? aboutUsObj.images.spotTempatDuduk : []
+      }
+    };
+
     return NextResponse.json({ 
       success: true,
       message: 'About us updated successfully',
-      aboutUs 
+      aboutUs: formattedResponse
     });
   } catch (error: any) {
     console.error('Update about us error:', error);
