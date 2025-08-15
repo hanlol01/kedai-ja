@@ -39,6 +39,13 @@ export async function POST(request: NextRequest) {
     }
 
     const db = mongoose.connection.db;
+    
+    // Type safety check untuk database connection
+    if (!db) {
+      console.error('Database connection not available');
+      return NextResponse.json({ error: 'Database connection error' }, { status: 500 });
+    }
+    
     const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
 
     const originalFilename = (file as File).name || 'unknown';
