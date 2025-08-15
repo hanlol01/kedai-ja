@@ -623,7 +623,7 @@ export default function Home() {
               
               <div className="text-center">
                 <a
-                  href="https://gofood.co.id/garut/restaurant/kedai-j-a-d8768ea9-598b-4bb0-9702-bd64600ae2d1"
+                  href="https://gofood.link/a/EjanqQy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-green-500/25 hover:-translate-y-1 transition-all duration-300 group"

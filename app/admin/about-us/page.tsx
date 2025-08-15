@@ -124,8 +124,8 @@ export default function AdminAboutUs() {
       const response = await fetch('/api/about-us');
       const data = await response.json();
       setAboutUs(data.aboutUs || {
-        title: 'About Us',
-        subtitle: 'Welcome to Kedai J.A',
+        title: 'Tentang',
+        subtitle: 'Seputar Kedai J.A',
         description: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
         secondDescription: 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
         companyDescription: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
@@ -208,8 +208,8 @@ export default function AdminAboutUs() {
         }
       }
 
-      const { response, data } = await fetchWithRetry('/api/about-us', {
-        method: 'PUT',
+      const { response, data } = await fetchWithRetry('/api/about-us/update', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

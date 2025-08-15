@@ -4,9 +4,9 @@ import AboutUs from '@/models/AboutUs';
 import { getSession } from '@/lib/auth';
 
 // Cache data untuk mengurangi waktu loading - diperpanjang untuk data yang jarang berubah
-let cachedAboutUs: any = null;
-let cacheTime: number = 0;
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 jam dalam milidetik (data about us jarang berubah)
+export let cachedAboutUs: any = null;
+export let cacheTime: number = 0;
+export const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 jam dalam milidetik (data about us jarang berubah)
 
 // Fallback data yang selalu tersedia
 const FALLBACK_DATA = {
@@ -112,61 +112,14 @@ export async function GET() {
   }
 }
 
+// PUT method sudah dipindahkan ke /api/about-us/update dengan method POST
+// Untuk kompatibilitas API, kita tetap menyediakan handler dengan pesan informasi
 export async function PUT(request: NextRequest) {
-  try {
-    const session = await getSession(request);
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Timeout yang lebih pendek untuk update
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Database write timeout')), 10000); // 10 detik timeout
-    });
-
-    await Promise.race([connectDB(), timeoutPromise]);
-    
-    const updateData = await request.json();
-
-    // Gunakan findOneAndUpdate dengan options yang dioptimalkan
-    const updatePromise = AboutUs.findOneAndUpdate(
-      {},
-      { $set: updateData },
-      { 
-        new: true, 
-        upsert: true, 
-        setDefaultsOnInsert: true, 
-        maxTimeMS: 10000,
-        lean: true // Gunakan lean untuk performa
-      }
-    );
-
-    const aboutUs = await Promise.race([updatePromise, timeoutPromise]);
-    
-    // Update cache setelah berhasil update
-    cachedAboutUs = aboutUs;
-    cacheTime = Date.now();
-
-    return NextResponse.json({ 
-      message: 'About us updated successfully',
-      aboutUs 
-    });
-  } catch (error: any) {
-    console.error('Update about us error:', error);
-    
-    if (error && (error.message === 'Database write timeout' || error.name === 'MongoNetworkTimeoutError')) {
-      return NextResponse.json(
-        { error: 'Koneksi database lambat. Coba lagi beberapa saat.' },
-        { status: 503 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    { 
+      error: 'Method not supported on this endpoint', 
+      message: 'Please use POST /api/about-us/update instead'
+    },
+    { status: 405 }
+  );
 }
