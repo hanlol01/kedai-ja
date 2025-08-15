@@ -26,6 +26,12 @@ const FALLBACK_DATA = {
 };
 
 export async function GET() {
+  // Set header untuk menghindari caching di Vercel
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+  headers.set('Surrogate-Control', 'no-store');
   try {
     // 1. Cek cache terlebih dahulu - prioritas utama
     const cacheState = getCache();
@@ -34,8 +40,9 @@ export async function GET() {
         success: true, 
         aboutUs: cacheState.data,
         fromCache: true,
-        cacheAge: Math.floor((Date.now() - cacheState.time) / 1000) // dalam detik
-      });
+        cacheAge: Math.floor((Date.now() - cacheState.time) / 1000), // dalam detik
+        timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
+      }, { headers });
     }
 
     // 2. Set timeout yang lebih pendek untuk database query
@@ -104,8 +111,9 @@ export async function GET() {
     return NextResponse.json({ 
       success: true, 
       aboutUs: formattedAboutUs,
-      fromDatabase: true
-    });
+      fromDatabase: true,
+      timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
+    }, { headers });
     
   } catch (error: any) {
     console.warn('About Us query failed, serving fallback/cache:', error.message);
@@ -136,8 +144,9 @@ export async function GET() {
         success: true, 
         aboutUs: formattedCacheData,
         fromCache: true,
-        note: 'Served from cache due to database error'
-      });
+        note: 'Served from cache due to database error',
+        timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
+      }, { headers });
     }
     
     // 8. Fallback data jika tidak ada cache
@@ -146,9 +155,10 @@ export async function GET() {
         success: true, 
         aboutUs: FALLBACK_DATA,
         fromFallback: true,
-        note: 'Served from fallback data'
+        note: 'Served from fallback data',
+        timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
       },
-      { status: 200 }
+      { status: 200, headers }
     );
   }
 }
@@ -156,11 +166,19 @@ export async function GET() {
 // PUT method sudah dipindahkan ke /api/about-us/update dengan method POST
 // Untuk kompatibilitas API, kita tetap menyediakan handler dengan pesan informasi
 export async function PUT(request: NextRequest) {
+  // Set header untuk menghindari caching di Vercel
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+  headers.set('Surrogate-Control', 'no-store');
+
   return NextResponse.json(
     { 
       error: 'Method not supported on this endpoint', 
-      message: 'Please use POST /api/about-us/update instead'
+      message: 'Please use POST /api/about-us/update instead',
+      timestamp: Date.now()
     },
-    { status: 405 }
+    { status: 405, headers }
   );
 }

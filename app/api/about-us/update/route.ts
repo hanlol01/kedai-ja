@@ -5,6 +5,12 @@ import { getSession } from '@/lib/auth';
 import { setCache } from '../cache';
 
 export async function POST(request: NextRequest) {
+  // Set header untuk menghindari caching di Vercel
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+  headers.set('Surrogate-Control', 'no-store');
   try {
     const session = await getSession(request);
     if (!session) {
@@ -66,21 +72,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       success: true,
       message: 'About us updated successfully',
-      aboutUs: formattedResponse
-    });
+      aboutUs: formattedResponse,
+      timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
+    }, { headers });
   } catch (error: any) {
     console.error('Update about us error:', error);
     
     if (error && (error.message === 'Database write timeout' || error.name === 'MongoNetworkTimeoutError')) {
       return NextResponse.json(
-        { error: 'Koneksi database lambat. Coba lagi beberapa saat.' },
-        { status: 503 }
+        { 
+          error: 'Koneksi database lambat. Coba lagi beberapa saat.',
+          timestamp: Date.now() 
+        },
+        { status: 503, headers }
       );
     }
     
     return NextResponse.json(
-      { error: 'Internal server error: ' + (error.message || 'Unknown error') },
-      { status: 500 }
+      { 
+        error: 'Internal server error: ' + (error.message || 'Unknown error'),
+        timestamp: Date.now()
+      },
+      { status: 500, headers }
     );
   }
 }
