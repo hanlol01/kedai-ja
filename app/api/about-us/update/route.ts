@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import AboutUs from '@/models/AboutUs';
 import { getSession } from '@/lib/auth';
-
-// Cache reference untuk akses dari rute berbeda
-let cachedAboutUs: any = null;
-let cacheTime: number = 0;
+import { setCache } from '../cache';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,19 +39,7 @@ export async function POST(request: NextRequest) {
     const aboutUs = await Promise.race([updatePromise, timeoutPromise]);
     
     // Update cache setelah berhasil update
-    try {
-      // Import modul utama untuk update cache globalnya
-      const mod = await import('../route');
-      // @ts-ignore - variable cachedAboutUs and cacheTime exist in the imported module
-      mod.cachedAboutUs = aboutUs;
-      // @ts-ignore
-      mod.cacheTime = Date.now();
-    } catch (cacheError) {
-      console.warn('Failed to invalidate about-us cache:', cacheError);
-      // Update cache lokal sebagai fallback
-      cachedAboutUs = aboutUs;
-      cacheTime = Date.now();
-    }
+    setCache(aboutUs);
 
     return NextResponse.json({ 
       success: true,

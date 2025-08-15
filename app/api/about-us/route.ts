@@ -3,10 +3,8 @@ import connectDB from '@/lib/db';
 import AboutUs from '@/models/AboutUs';
 import { getSession } from '@/lib/auth';
 
-// Cache data untuk mengurangi waktu loading - diperpanjang untuk data yang jarang berubah
-export let cachedAboutUs: any = null;
-export let cacheTime: number = 0;
-export const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 jam dalam milidetik (data about us jarang berubah)
+// Import cache utilities
+import { getCache, setCache, CACHE_DURATION } from './cache';
 
 // Fallback data yang selalu tersedia
 const FALLBACK_DATA = {
@@ -30,13 +28,13 @@ const FALLBACK_DATA = {
 export async function GET() {
   try {
     // 1. Cek cache terlebih dahulu - prioritas utama
-    const now = Date.now();
-    if (cachedAboutUs && (now - cacheTime < CACHE_DURATION)) {
+    const cacheState = getCache();
+    if (cacheState.isFresh) {
       return NextResponse.json({ 
         success: true, 
-        aboutUs: cachedAboutUs,
+        aboutUs: cacheState.data,
         fromCache: true,
-        cacheAge: Math.floor((now - cacheTime) / 1000) // dalam detik
+        cacheAge: Math.floor((Date.now() - cacheState.time) / 1000) // dalam detik
       });
     }
 
@@ -77,8 +75,7 @@ export async function GET() {
     }
     
     // 6. Update cache
-    cachedAboutUs = aboutUs;
-    cacheTime = now;
+    setCache(aboutUs);
     
     return NextResponse.json({ 
       success: true, 
@@ -90,10 +87,11 @@ export async function GET() {
     console.warn('About Us query failed, serving fallback/cache:', error.message);
     
     // 7. Gunakan cache jika ada error tapi cache tersedia
-    if (cachedAboutUs) {
+    const cacheState = getCache();
+    if (cacheState.data) {
       return NextResponse.json({ 
         success: true, 
-        aboutUs: cachedAboutUs,
+        aboutUs: cacheState.data,
         fromCache: true,
         note: 'Served from cache due to database error'
       });
