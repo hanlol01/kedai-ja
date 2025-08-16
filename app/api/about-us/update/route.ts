@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import AboutUs from '@/models/AboutUs';
 import { getSession } from '@/lib/auth';
 import { setCache } from '../cache';
+import { connectToDBWithRetry } from '../vercel-helper';
 
 export async function POST(request: NextRequest) {
   // Set header untuk menghindari caching di Vercel
@@ -20,12 +21,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Timeout yang lebih pendek untuk update
+    // Deteksi environment Vercel
+    const isVercel = process.env.VERCEL === '1';
+    let connectionSuccess = false;
+    
+    // Timeout yang lebih panjang untuk operasi update
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Database write timeout')), 10000); // 10 detik timeout
+      setTimeout(() => reject(new Error('Database write timeout')), isVercel ? 15000 : 10000);
     });
 
-    await Promise.race([connectDB(), timeoutPromise]);
+    try {
+      // Gunakan metode koneksi yang ditingkatkan di Vercel
+      if (isVercel) {
+        console.log("Vercel environment detected, using enhanced connection method for update");
+        connectionSuccess = await connectToDBWithRetry(3, 1000);
+      } else {
+        await connectDB();
+        connectionSuccess = true;
+      }
+    } catch (error) {
+      console.error("Database connection error during update:", error);
+      throw new Error('Database connection failed');
+    }
+    
+    // Jika koneksi gagal, kembalikan error
+    if (!connectionSuccess) {
+      throw new Error('Could not establish database connection');
+    }
     
     const updateData = await request.json();
 
