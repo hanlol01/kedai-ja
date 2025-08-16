@@ -3,15 +3,8 @@ import connectDB from '@/lib/db';
 import AboutUs from '@/models/AboutUs';
 import { getSession } from '@/lib/auth';
 import { setCache } from '../cache';
-import { connectToDBWithRetry } from '../vercel-helper';
 
 export async function POST(request: NextRequest) {
-  // Set header untuk menghindari caching di Vercel
-  const headers = new Headers();
-  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  headers.set('Pragma', 'no-cache');
-  headers.set('Expires', '0');
-  headers.set('Surrogate-Control', 'no-store');
   try {
     const session = await getSession(request);
     if (!session) {
@@ -21,33 +14,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Deteksi environment Vercel
-    const isVercel = process.env.VERCEL === '1';
-    let connectionSuccess = false;
-    
-    // Timeout yang lebih panjang untuk operasi update
+    // Timeout yang lebih pendek untuk update
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Database write timeout')), isVercel ? 15000 : 10000);
+      setTimeout(() => reject(new Error('Database write timeout')), 10000); // 10 detik timeout
     });
 
-    try {
-      // Gunakan metode koneksi yang ditingkatkan di Vercel
-      if (isVercel) {
-        console.log("Vercel environment detected, using enhanced connection method for update");
-        connectionSuccess = await connectToDBWithRetry(3, 1000);
-      } else {
-        await connectDB();
-        connectionSuccess = true;
-      }
-    } catch (error) {
-      console.error("Database connection error during update:", error);
-      throw new Error('Database connection failed');
-    }
-    
-    // Jika koneksi gagal, kembalikan error
-    if (!connectionSuccess) {
-      throw new Error('Could not establish database connection');
-    }
+    await Promise.race([connectDB(), timeoutPromise]);
     
     const updateData = await request.json();
 
@@ -66,56 +38,27 @@ export async function POST(request: NextRequest) {
 
     const aboutUs = await Promise.race([updatePromise, timeoutPromise]);
     
-    // Konversi ke format yang benar untuk frontend
-    const aboutUsObj = aboutUs as any;
-    const formattedResponse = {
-      _id: aboutUsObj._id?.toString() || '',
-      title: aboutUsObj.title || '',
-      subtitle: aboutUsObj.subtitle || '',
-      description: aboutUsObj.description || '',
-      secondDescription: aboutUsObj.secondDescription || '',
-      companyDescription: aboutUsObj.companyDescription || '',
-      yearsOfExperience: aboutUsObj.yearsOfExperience || 0,
-      masterChefs: aboutUsObj.masterChefs || 0,
-      // Pastikan seluruh struktur images sesuai dengan yang diharapkan frontend
-      images: {
-        image1: aboutUsObj.images?.image1 || '',
-        image2: aboutUsObj.images?.image2 || '',
-        image3: aboutUsObj.images?.image3 || '',
-        image4: aboutUsObj.images?.image4 || '',
-        lingkunganKedai: Array.isArray(aboutUsObj.images?.lingkunganKedai) ? aboutUsObj.images.lingkunganKedai : [],
-        spotTempatDuduk: Array.isArray(aboutUsObj.images?.spotTempatDuduk) ? aboutUsObj.images.spotTempatDuduk : []
-      }
-    };
-
-    // Update cache setelah berhasil update dengan data yang sudah diformat
-    setCache(formattedResponse);
+    // Update cache setelah berhasil update
+    setCache(aboutUs);
 
     return NextResponse.json({ 
       success: true,
       message: 'About us updated successfully',
-      aboutUs: formattedResponse,
-      timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
-    }, { headers });
+      aboutUs 
+    });
   } catch (error: any) {
     console.error('Update about us error:', error);
     
     if (error && (error.message === 'Database write timeout' || error.name === 'MongoNetworkTimeoutError')) {
       return NextResponse.json(
-        { 
-          error: 'Koneksi database lambat. Coba lagi beberapa saat.',
-          timestamp: Date.now() 
-        },
-        { status: 503, headers }
+        { error: 'Koneksi database lambat. Coba lagi beberapa saat.' },
+        { status: 503 }
       );
     }
     
     return NextResponse.json(
-      { 
-        error: 'Internal server error: ' + (error.message || 'Unknown error'),
-        timestamp: Date.now()
-      },
-      { status: 500, headers }
+      { error: 'Internal server error: ' + (error.message || 'Unknown error') },
+      { status: 500 }
     );
   }
 }

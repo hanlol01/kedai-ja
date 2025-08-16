@@ -5,7 +5,6 @@ import { getSession } from '@/lib/auth';
 
 // Import cache utilities
 import { getCache, setCache, CACHE_DURATION } from './cache';
-import { connectToDBWithRetry, ensureAboutUsExists } from './vercel-helper';
 
 // Fallback data yang selalu tersedia
 const FALLBACK_DATA = {
@@ -27,12 +26,6 @@ const FALLBACK_DATA = {
 };
 
 export async function GET() {
-  // Set header untuk menghindari caching di Vercel
-  const headers = new Headers();
-  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  headers.set('Pragma', 'no-cache');
-  headers.set('Expires', '0');
-  headers.set('Surrogate-Control', 'no-store');
   try {
     // 1. Cek cache terlebih dahulu - prioritas utama
     const cacheState = getCache();
@@ -41,125 +34,54 @@ export async function GET() {
         success: true, 
         aboutUs: cacheState.data,
         fromCache: true,
-        cacheAge: Math.floor((Date.now() - cacheState.time) / 1000), // dalam detik
-        timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
-      }, { headers });
+        cacheAge: Math.floor((Date.now() - cacheState.time) / 1000) // dalam detik
+      });
     }
 
-    // Metode koneksi baru dengan retry khusus untuk Vercel
-    const isVercel = process.env.VERCEL === '1';
-    let connectionSuccess = false;
+    // 2. Set timeout yang lebih pendek untuk database query
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database query timeout')), 3000); // 3 detik timeout
+    });
+
+    // 3. Connect ke database dengan timeout yang lebih ketat
+    await Promise.race([connectDB(), timeoutPromise]);
     
-    try {
-      if (isVercel) {
-        console.log("Vercel environment detected, using enhanced connection method");
-        connectionSuccess = await connectToDBWithRetry(3, 1000);
-      } else {
-        await connectDB();
-        connectionSuccess = true;
-      }
-    } catch (error) {
-      console.error("Database connection error:", error);
-      connectionSuccess = false;
-    }
+    // 4. Query database dengan timeout dan projection untuk mengurangi data transfer
+    const aboutUsPromise = AboutUs.findOne({}, {
+      title: 1,
+      subtitle: 1,
+      description: 1,
+      secondDescription: 1,
+      companyDescription: 1,
+      yearsOfExperience: 1,
+      masterChefs: 1,
+      images: 1
+    }).lean(); // Gunakan lean() untuk performa lebih baik
     
-    let aboutUs = null;
+    let aboutUs = await Promise.race([aboutUsPromise, timeoutPromise]);
     
-    // Jika koneksi berhasil, ambil data
-    if (connectionSuccess) {
+    // 5. Jika tidak ada data, gunakan default
+    if (!aboutUs) {
+      aboutUs = FALLBACK_DATA;
+      
+      // Coba simpan default data (non-blocking)
       try {
-        // Timeout yang lebih panjang di Vercel
-        const queryTimeout = isVercel ? 8000 : 3000;
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Database query timeout')), queryTimeout);
-        });
-        
-        // Jika di Vercel, pastikan data about-us sudah ada
-        if (isVercel) {
-          // Ini akan membuat data default jika belum ada
-          aboutUs = await Promise.race([
-            ensureAboutUsExists(),
-            timeoutPromise
-          ]);
-        } else {
-          // Query database dengan timeout dan projection untuk mengurangi data transfer
-          const aboutUsPromise = AboutUs.findOne({}, {
-            title: 1,
-            subtitle: 1,
-            description: 1,
-            secondDescription: 1,
-            companyDescription: 1,
-            yearsOfExperience: 1,
-            masterChefs: 1,
-            images: 1
-          }).lean(); // Gunakan lean() untuk performa lebih baik
-          
-          aboutUs = await Promise.race([aboutUsPromise, timeoutPromise]);
-          
-          // Jika tidak ada data, gunakan default dan simpan
-          if (!aboutUs) {
-            aboutUs = FALLBACK_DATA;
-            
-            // Coba simpan default data (non-blocking)
-            try {
-              const savePromise = new AboutUs(FALLBACK_DATA).save();
-              await Promise.race([savePromise, timeoutPromise]);
-            } catch (saveError) {
-              console.warn('Failed to save default about us data:', saveError);
-              // Tidak throw error, gunakan fallback data
-            }
-          }
-        }
-      } catch (queryError) {
-        console.error("Query error after successful connection:", queryError);
-        aboutUs = null; // Akan gunakan fallback
+        const savePromise = new AboutUs(FALLBACK_DATA).save();
+        await Promise.race([savePromise, timeoutPromise]);
+      } catch (saveError) {
+        console.warn('Failed to save default about us data:', saveError);
+        // Tidak throw error, gunakan fallback data
       }
     }
     
     // 6. Update cache
     setCache(aboutUs);
     
-    // Pastikan data yang dikembalikan memiliki semua properti yang diharapkan
-    let formattedAboutUs;
-    
-    if (!aboutUs) {
-      console.warn("No AboutUs data returned from database, using fallback data");
-      formattedAboutUs = { ...FALLBACK_DATA };
-    } else {
-      console.log("Successfully retrieved AboutUs data from database:", 
-        aboutUs._id ? aboutUs._id.toString() : 'No ID');
-      
-      const aboutUsObj = aboutUs as any;
-      formattedAboutUs = {
-        _id: aboutUsObj._id?.toString() || 'unknown',
-        title: aboutUsObj.title || FALLBACK_DATA.title,
-        subtitle: aboutUsObj.subtitle || FALLBACK_DATA.subtitle,
-        description: aboutUsObj.description || FALLBACK_DATA.description,
-        secondDescription: aboutUsObj.secondDescription || FALLBACK_DATA.secondDescription,
-        companyDescription: aboutUsObj.companyDescription || FALLBACK_DATA.companyDescription,
-        yearsOfExperience: aboutUsObj.yearsOfExperience || FALLBACK_DATA.yearsOfExperience,
-        masterChefs: aboutUsObj.masterChefs || FALLBACK_DATA.masterChefs,
-        // Pastikan struktur images lengkap
-        images: {
-          image1: aboutUsObj.images?.image1 || '',
-          image2: aboutUsObj.images?.image2 || '',
-          image3: aboutUsObj.images?.image3 || '',
-          image4: aboutUsObj.images?.image4 || '',
-          lingkunganKedai: Array.isArray(aboutUsObj.images?.lingkunganKedai) ? aboutUsObj.images.lingkunganKedai : [],
-          spotTempatDuduk: Array.isArray(aboutUsObj.images?.spotTempatDuduk) ? aboutUsObj.images.spotTempatDuduk : []
-        }
-      };
-    }
-    
-    // Update cache dengan data yang sudah diformat
-    setCache(formattedAboutUs);
-    
     return NextResponse.json({ 
       success: true, 
-      aboutUs: formattedAboutUs,
-      fromDatabase: true,
-      timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
-    }, { headers });
+      aboutUs,
+      fromDatabase: true
+    });
     
   } catch (error: any) {
     console.warn('About Us query failed, serving fallback/cache:', error.message);
@@ -167,32 +89,12 @@ export async function GET() {
     // 7. Gunakan cache jika ada error tapi cache tersedia
     const cacheState = getCache();
     if (cacheState.data) {
-      // Pastikan format cache juga lengkap
-      const cacheData = cacheState.data as any;
-      const formattedCacheData = {
-        title: cacheData.title || FALLBACK_DATA.title,
-        subtitle: cacheData.subtitle || FALLBACK_DATA.subtitle,
-        description: cacheData.description || FALLBACK_DATA.description,
-        secondDescription: cacheData.secondDescription || FALLBACK_DATA.secondDescription,
-        companyDescription: cacheData.companyDescription || FALLBACK_DATA.companyDescription,
-        yearsOfExperience: cacheData.yearsOfExperience || FALLBACK_DATA.yearsOfExperience,
-        masterChefs: cacheData.masterChefs || FALLBACK_DATA.masterChefs,
-        images: {
-          image1: cacheData.images?.image1 || '',
-          image2: cacheData.images?.image2 || '',
-          image3: cacheData.images?.image3 || '',
-          image4: cacheData.images?.image4 || '',
-          lingkunganKedai: Array.isArray(cacheData.images?.lingkunganKedai) ? cacheData.images.lingkunganKedai : [],
-          spotTempatDuduk: Array.isArray(cacheData.images?.spotTempatDuduk) ? cacheData.images.spotTempatDuduk : []
-        }
-      };
       return NextResponse.json({ 
         success: true, 
-        aboutUs: formattedCacheData,
+        aboutUs: cacheState.data,
         fromCache: true,
-        note: 'Served from cache due to database error',
-        timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
-      }, { headers });
+        note: 'Served from cache due to database error'
+      });
     }
     
     // 8. Fallback data jika tidak ada cache
@@ -201,10 +103,9 @@ export async function GET() {
         success: true, 
         aboutUs: FALLBACK_DATA,
         fromFallback: true,
-        note: 'Served from fallback data',
-        timestamp: Date.now() // Tambahkan timestamp untuk memastikan respons unik
+        note: 'Served from fallback data'
       },
-      { status: 200, headers }
+      { status: 200 }
     );
   }
 }
@@ -212,19 +113,11 @@ export async function GET() {
 // PUT method sudah dipindahkan ke /api/about-us/update dengan method POST
 // Untuk kompatibilitas API, kita tetap menyediakan handler dengan pesan informasi
 export async function PUT(request: NextRequest) {
-  // Set header untuk menghindari caching di Vercel
-  const headers = new Headers();
-  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  headers.set('Pragma', 'no-cache');
-  headers.set('Expires', '0');
-  headers.set('Surrogate-Control', 'no-store');
-
   return NextResponse.json(
     { 
       error: 'Method not supported on this endpoint', 
-      message: 'Please use POST /api/about-us/update instead',
-      timestamp: Date.now()
+      message: 'Please use POST /api/about-us/update instead'
     },
-    { status: 405, headers }
+    { status: 405 }
   );
 }

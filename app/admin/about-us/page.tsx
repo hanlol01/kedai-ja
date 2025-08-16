@@ -45,7 +45,6 @@ export default function AdminAboutUs() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<'basic' | 'company'>('basic');
-  const [lastSaveTime, setLastSaveTime] = useState<number>(0);
   const [imageFiles, setImageFiles] = useState<{[key: string]: File | null}>({
     image1: null,
     image2: null,
@@ -56,11 +55,7 @@ export default function AdminAboutUs() {
   });
 
   // Helper untuk cek apakah sedang berjalan di Vercel
-  const isVercel = typeof window !== 'undefined' && (
-    !!process.env.NEXT_PUBLIC_VERCEL || 
-    !!process.env.NEXT_PUBLIC_VERCEL_URL ||
-    window.location.hostname.includes('vercel.app')
-  );
+  const isVercel = typeof window !== 'undefined' && !!process.env.NEXT_PUBLIC_VERCEL;
 
   const isValidImageFile = (file: File) => {
     const isImage = file.type.startsWith('image/');
@@ -120,116 +115,31 @@ export default function AdminAboutUs() {
     });
   };
 
-  // Helper function untuk menyimpan data ke localStorage
-  const saveToLocalStorage = (data: AboutUsData) => {
-    try {
-      const timestamp = new Date().getTime();
-      localStorage.setItem('aboutUs_data', JSON.stringify(data));
-      localStorage.setItem('aboutUs_timestamp', timestamp.toString());
-      console.log("Data about-us disimpan ke localStorage");
-    } catch (e) {
-      console.warn("Gagal menyimpan ke localStorage:", e);
-    }
-  };
-  
-  // Helper function untuk mengambil data dari localStorage
-  const getFromLocalStorage = (): { data: AboutUsData | null, timestamp: number } => {
-    try {
-      const dataString = localStorage.getItem('aboutUs_data');
-      const timestamp = parseInt(localStorage.getItem('aboutUs_timestamp') || '0');
-      if (dataString) {
-        const data = JSON.parse(dataString) as AboutUsData;
-        console.log("Data about-us ditemukan di localStorage, timestamp:", new Date(timestamp).toISOString());
-        return { data, timestamp };
-      }
-    } catch (e) {
-      console.warn("Gagal membaca dari localStorage:", e);
-    }
-    return { data: null, timestamp: 0 };
-  };
-
   useEffect(() => {
-    // Coba load data dari localStorage terlebih dahulu sebagai fallback
-    const { data: localData } = getFromLocalStorage();
-    if (localData) {
-      console.log("Menggunakan data dari localStorage sementara fetching dari server");
-      setAboutUs(localData);
-    }
-    
-    // Selalu fetch dari server untuk mendapatkan data terbaru
     fetchAboutUs();
   }, []);
 
-  const fetchAboutUs = async (forceUpdate = false) => {
+  const fetchAboutUs = async () => {
     try {
-      // Cek apakah baru saja melakukan save (dalam 5 detik terakhir)
-      // Jika ya dan tidak dipaksa, skip fetch untuk mencegah override
-      const timeSinceLastSave = Date.now() - lastSaveTime;
-      if (!forceUpdate && lastSaveTime > 0 && timeSinceLastSave < 5000) {
-        console.log("Skipping fetch karena baru saja melakukan save", timeSinceLastSave, "ms yang lalu");
-        return;
-      }
-      
-      // Menambahkan timestamp untuk menghindari cache browser
-      const timestamp = new Date().getTime();
-      const response = await fetch(`/api/about-us?t=${timestamp}`, {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        },
-        cache: 'no-store' // Force fetch untuk selalu mendapatkan data terbaru
-      });
+      const response = await fetch('/api/about-us');
       const data = await response.json();
-      
-      console.log("Fetched aboutUs data:", data);
-      
-      if (data.success && data.aboutUs) {
-        // Pastikan data memiliki struktur yang lengkap
-        const aboutUsData = {
-          title: data.aboutUs.title || 'Tentang',
-          subtitle: data.aboutUs.subtitle || 'Seputar Kedai J.A',
-          description: data.aboutUs.description || 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
-          secondDescription: data.aboutUs.secondDescription || 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
-          companyDescription: data.aboutUs.companyDescription || 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
-          yearsOfExperience: data.aboutUs.yearsOfExperience || 7,
-          masterChefs: data.aboutUs.masterChefs || 25,
-          images: {
-            image1: data.aboutUs.images?.image1 || '',
-            image2: data.aboutUs.images?.image2 || '',
-            image3: data.aboutUs.images?.image3 || '',
-            image4: data.aboutUs.images?.image4 || '',
-            lingkunganKedai: Array.isArray(data.aboutUs.images?.lingkunganKedai) ? data.aboutUs.images.lingkunganKedai : [],
-            spotTempatDuduk: Array.isArray(data.aboutUs.images?.spotTempatDuduk) ? data.aboutUs.images.spotTempatDuduk : []
-          }
-        };
-        
-        console.log("Setting aboutUs state with:", aboutUsData);
-        setAboutUs(aboutUsData);
-        
-        // Simpan data ke localStorage sebagai fallback
-        saveToLocalStorage(aboutUsData);
-      } else {
-        // Fallback jika data tidak tersedia
-        setAboutUs({
-          title: 'Tentang',
-          subtitle: 'Seputar Kedai J.A',
-          description: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
-          secondDescription: 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
-          companyDescription: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
-          yearsOfExperience: 99,
-          masterChefs: 25,
-          images: {
-            image1: '',
-            image2: '',
-            image3: '',
-            image4: '',
-            lingkunganKedai: [],
-            spotTempatDuduk: []
-          }
-        });
-      }
-      
+      setAboutUs(data.aboutUs || {
+        title: 'Tentang',
+        subtitle: 'Seputar Kedai J.A',
+        description: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
+        secondDescription: 'Dengan pengalaman bertahun-tahun di industri kuliner, kami terus berinovasi untuk memberikan pengalaman dining yang tak terlupakan.',
+        companyDescription: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
+        yearsOfExperience: 7,
+        masterChefs: 25,
+        images: {
+          image1: '',
+          image2: '',
+          image3: '',
+          image4: '',
+          lingkunganKedai: [],
+          spotTempatDuduk: []
+        }
+      });
       setLoading(false);
     } catch (error) {
       console.error('Error fetching about us:', error);
@@ -243,34 +153,18 @@ export default function AdminAboutUs() {
     setSuccess('');
     setSaving(true);
 
-    // Implementasi fungsi retry dengan pencegahan cache
+    // Implementasi fungsi retry
     const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2) => {
       let retries = 0;
-      
-      // Menambahkan header untuk mencegah cache
-      if (!options.headers) {
-        options.headers = {};
-      }
-      (options.headers as Record<string, string>)['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-      (options.headers as Record<string, string>)['Pragma'] = 'no-cache';
-      (options.headers as Record<string, string>)['Expires'] = '0';
-      options.cache = 'no-store';
-      
       while (retries <= maxRetries) {
         try {
-          // Tambahkan timestamp ke URL untuk mencegah cache
-          const timestampedUrl = url.includes('?') 
-            ? `${url}&_t=${Date.now()}` 
-            : `${url}?_t=${Date.now()}`;
-            
-          const response = await fetch(timestampedUrl, options);
+          const response = await fetch(url, options);
           const data = await response.json();
           
           if (!response.ok) {
             // Jika server timeout/503, coba lagi
             if (response.status === 503 && retries < maxRetries) {
               retries++;
-              console.log(`Percobaan ulang ke-${retries} untuk request ${url}`);
               // Tunggu 2 detik sebelum mencoba lagi
               await new Promise(resolve => setTimeout(resolve, 2000));
               continue;
@@ -282,7 +176,6 @@ export default function AdminAboutUs() {
         } catch (err) {
           if (retries === maxRetries) throw err;
           retries++;
-          console.warn(`Error saat request: ${err}. Percobaan ulang ke-${retries}`);
           // Tunggu sebelum mencoba lagi (exponential backoff)
           await new Promise(resolve => setTimeout(resolve, 2000 * retries));
         }
@@ -327,7 +220,6 @@ export default function AdminAboutUs() {
       });
 
       setSuccess('Data tentang kami berhasil disimpan');
-      setLastSaveTime(Date.now()); // Set waktu save untuk mencegah override
       setImageFiles({
         image1: null,
         image2: null,
@@ -338,43 +230,7 @@ export default function AdminAboutUs() {
       });
       
       // Update local state with new data
-      if (data.aboutUs) {
-        console.log("Updating state with new data after successful update:", data.aboutUs);
-        // Pastikan struktur data lengkap sebelum update state
-        const updatedData = {
-          ...data.aboutUs,
-          images: {
-            image1: data.aboutUs.images?.image1 || '',
-            image2: data.aboutUs.images?.image2 || '',
-            image3: data.aboutUs.images?.image3 || '',
-            image4: data.aboutUs.images?.image4 || '',
-            lingkunganKedai: Array.isArray(data.aboutUs.images?.lingkunganKedai) ? data.aboutUs.images.lingkunganKedai : [],
-            spotTempatDuduk: Array.isArray(data.aboutUs.images?.spotTempatDuduk) ? data.aboutUs.images.spotTempatDuduk : []
-          }
-        };
-        
-        setAboutUs(updatedData);
-        
-        // Simpan juga ke localStorage untuk persistence
-        saveToLocalStorage(updatedData);
-        
-        // Di Vercel, tidak perlu reload ulang karena sudah dapat data terbaru dari POST response
-        // Reload hanya diperlukan jika ada keraguan tentang konsistensi data
-        if (!isVercel) {
-          console.log("Non-Vercel environment: Scheduling data reload after update");
-          setTimeout(() => {
-            console.log("Executing reload after update");
-            fetchAboutUs();
-          }, 1000);
-        } else {
-          console.log("Vercel environment: Using POST response data, skipping reload to prevent form reset");
-        }
-      }
-
-      // Clear success message setelah 3 detik
-      setTimeout(() => {
-        setSuccess('');
-      }, 3000);
+      setAboutUs(data.aboutUs);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan data.');
     } finally {
