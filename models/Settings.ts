@@ -41,7 +41,7 @@ const SettingsSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Hours is required'],
     trim: true,
-    default: 'Senin - Minggu, 09.00 - 21.00'
+    default: 'Senin - Minggu, 11.00 - 22.00'
   },
   email: {
     type: String,

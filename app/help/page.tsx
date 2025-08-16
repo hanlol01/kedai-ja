@@ -31,7 +31,7 @@ export default function Help() {
       title: 'Jam Operasional',
       description: 'Informasi lengkap tentang jam buka restoran',
       steps: [
-        'Senin - Minggu: 09.00 - 21.00 WIB',
+        'Senin - Minggu: 11.00 - 22.00 WIB',
         'Buka setiap hari termasuk hari libur',
         'Untuk pemesanan khusus, hubungi 1 hari sebelumnya',
         'Layanan delivery tersedia hingga pukul 20.30'

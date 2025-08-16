@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, ShoppingCart, Headphones, Utensils, User, Camera } from 'lucide-react';
+import { ChefHat, Star, Clock, MapPin, Phone, ArrowRight, ShoppingCart, Headphones, Utensils, User, Camera, MessageCircle } from 'lucide-react';
 import AboutUsSection from '@/components/ui/aboutussection';
 import MainLayout from '@/components/ui/MainLayout';
 import MediaCarousel from '@/components/ui/MediaCarousel';
@@ -144,7 +144,7 @@ export default function Home() {
     description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
     address: 'Jl. Raya Leles No.45, Garut',
     contact: '081234567890',
-    hours: 'Senin - Minggu, 09.00 - 21.00',
+    hours: 'Senin - Minggu, 11.00 - 22.00',
     email: 'info@kedai-ja.com'
   };
 
@@ -316,7 +316,7 @@ export default function Home() {
               >
               <span className="flex items-center justify-center">
                 Hubungi Kami
-                <Phone className="ml-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
+                <MessageCircle className="ml-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
               </span>
               </Link>
           </div>
@@ -988,7 +988,15 @@ export default function Home() {
 
           {/* Gallery Preview Grid - Show first 6 images */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {Array.from({ length: 6 }, (_, index) => (
+            {/* Gambar gallery preview dari public folder */}
+            {[
+              { src: '/gallery-1.jpg', title: 'Suasana Kedai', description: 'Nuansa hangat dan nyaman di Kedai J.A' },
+              { src: '/gallery-2.jpg', title: 'Hidangan Spesial', description: 'Kuliner autentik Indonesia terbaik' },
+              { src: '/gallery-3.jpg', title: 'Interior Design', description: 'Desain interior yang memukau' },
+              { src: '/gallery-4.jpg', title: 'Chef Professional', description: 'Tim chef berpengalaman kami' },
+              { src: '/gallery-5.jpg', title: 'Outdoor Area', description: 'Area outdoor yang asri dan sejuk' },
+              { src: '/gallery-6.jpg', title: 'Special Event', description: 'Moment spesial bersama keluarga' }
+            ].map((item, index) => (
               <div
                 key={index}
                 className="group relative aspect-square overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer"
@@ -996,8 +1004,21 @@ export default function Home() {
                 data-aos-delay={200 + (index * 100)}
                 data-aos-duration="600"
               >
-                {/* Placeholder for now - will be replaced with actual gallery images */}
-                <div className="w-full h-full bg-gradient-to-br from-primary-600/20 via-secondary-600/20 to-primary-800/20 flex items-center justify-center">
+                {/* Gallery Image */}
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  onError={(e) => {
+                    // Fallback jika gambar tidak ditemukan
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                
+                {/* Fallback placeholder jika gambar tidak ada */}
+                <div className="hidden w-full h-full bg-gradient-to-br from-primary-600/20 via-secondary-600/20 to-primary-800/20 flex items-center justify-center">
                   <Camera className="h-16 w-16 text-white/50 group-hover:scale-110 transition-transform duration-500" />
                 </div>
                 
@@ -1006,8 +1027,8 @@ export default function Home() {
                 
                 {/* Hover Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <h3 className="text-lg font-semibold mb-2">Gallery Image {index + 1}</h3>
-                  <p className="text-sm text-gray-200">Koleksi foto dari Kedai J.A</p>
+                  <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-200">{item.description}</p>
                 </div>
                 
                 {/* Hover overlay icon */}
@@ -1278,125 +1299,6 @@ export default function Home() {
         <div className="container-fluid relative z-10">
           <div data-aos="fade-up" data-aos-duration="800">
           <AboutUsSection />
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Menu Section */}
-      <section className="section-spacing bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 relative overflow-hidden">
-        {/* Background Decoration */}
-        <div className="absolute inset-0">
-          <div className="absolute top-10 right-10 w-64 h-64 bg-secondary-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-80 h-80 bg-primary-500/10 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="container-fluid relative z-10">
-          <div className="text-center mb-16" data-aos="fade-up" data-aos-duration="800">
-            <h2 className="heading-primary text-4xl md:text-5xl lg:text-6xl text-white mb-6">
-              Menu{" "}
-              <span className="text-gradient bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
-                Best Seller
-              </span>
-            </h2>
-            <p className="heading-secondary text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-              Cicipi hidangan terbaik kami yang telah menjadi favorit pelanggan
-            </p>
-          </div>
-
-          {bestSellerItems.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {bestSellerItems.map((item, index) => (
-                <div key={item._id} 
-                       className="group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg overflow-hidden hover:-translate-y-3 hover:shadow-primary-500/20 transition-all duration-500"
-                       data-aos="scale-up" data-aos-delay={200 + (index * 100)} data-aos-duration="600">
-                    
-                    {/* Image Container */}
-                    <div className="relative h-64 overflow-hidden">
-                    {item.image ? (
-                        <img 
-                          src={item.image} 
-                          alt={item.name} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 flex items-center justify-center">
-                          <ChefHat className="h-20 w-20 text-primary-300 opacity-80 group-hover:scale-110 transition-transform duration-500 animate-float" />
-                        </div>
-                      )}
-                      
-                      {/* Best Seller Badge */}
-                      <div className="absolute top-4 right-4">
-                        <div className="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      BEST SELLER
-                    </div>
-                  </div>
-
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="heading-secondary text-xl font-bold text-white mb-2 group-hover:text-primary-400 transition-colors duration-300">
-                            {item.name}
-                          </h3>
-                          <p className="text-body text-gray-300 text-sm leading-relaxed line-clamp-2">
-                            {item.description}
-                          </p>
-                        </div>
-                        <span className={`ml-3 px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${
-                        item.category === 'Makanan' 
-                            ? 'bg-primary-900/70 text-primary-300 border border-primary-700/50' 
-                            : 'bg-blue-900/70 text-blue-300 border border-blue-700/50'
-                      }`}>
-                        {item.category}
-                      </span>
-                    </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-primary-400">
-                          Rp {item.price.toLocaleString('id-ID')}
-                        </span>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <Link
-                            href="/menu"
-                            className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-primary-600 hover:to-primary-700 transition-all duration-300 flex items-center shadow-lg hover:shadow-primary-500/25"
-                          >
-                            Pesan
-                            <ArrowRight className="ml-1 h-4 w-4" />
-                          </Link>
-                        </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            </>
-          ) : (
-            <div className="text-center py-20" data-aos="fade-up" data-aos-delay="300">
-              <div className="relative inline-block mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full blur-lg opacity-40 animate-pulse-soft"></div>
-                <ChefHat className="relative h-20 w-20 text-primary-400 mx-auto animate-float" />
-              </div>
-              <h3 className="heading-secondary text-xl text-white mb-2">Menu Best Seller Akan Segera Hadir</h3>
-              <p className="text-body text-gray-300">Kami sedang menyiapkan hidangan terbaik untuk Anda</p>
-            </div>
-          )}
-
-          <div className="text-center" data-aos="fade-up" data-aos-delay="400">
-            <Link
-              href="/menu"
-              className="group relative px-10 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-lg rounded-2xl shadow-2xl hover:shadow-primary-500/25 transition-all duration-500 hover:scale-105 inline-flex items-center"
-            >
-              <span className="relative z-10 flex items-center justify-center">
-              Lihat Semua Menu
-                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </Link>
           </div>
         </div>
       </section>

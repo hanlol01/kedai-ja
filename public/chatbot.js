@@ -1916,6 +1916,44 @@ const sendToFlowise = async (message) => {
         sendBtn.disabled = true;
     };
 
+    // Global function to open chatbot (exposed to window)
+    window.openChatbot = () => {
+        if (typeof window === 'undefined') return;
+        
+        const chatWindow = document.getElementById('chatbot-window');
+        const badge = document.getElementById('chatbot-badge');
+        const tooltip = document.getElementById('chatbot-tooltip');
+        const input = document.getElementById('chatbot-input');
+        
+        if (chatWindow && !isOpen) {
+            chatWindow.style.display = 'flex';
+            if (badge) badge.style.display = 'none';
+            if (tooltip) tooltip.classList.remove('show');
+            isOpen = true;
+            
+            // Auto-focus input and set default text
+            if (input) {
+                setTimeout(() => {
+                    input.value = 'Saya ingin pesan ';
+                    input.focus();
+                    // Set cursor position at the end
+                    input.setSelectionRange(input.value.length, input.value.length);
+                    // Enable send button since there's text
+                    const sendBtn = document.getElementById('chatbot-send');
+                    if (sendBtn) {
+                        sendBtn.disabled = false;
+                    }
+                }, 100);
+            }
+            
+            // Show welcome message if no messages
+            const messages = document.getElementById('chatbot-messages');
+            if (messages && messages.children.length === 0) {
+                showWelcomeMessage();
+            }
+        }
+    };
+
     // Initialize when DOM is ready (only in browser)
     if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {

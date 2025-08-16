@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronRight, Home, Settings, FileText, MessageSquare, Star, Coffee, LogOut } from 'lucide-react';
+import { Menu, X, ChevronRight, Home, Settings, FileText, MessageSquare, Star, Coffee, LogOut, Camera } from 'lucide-react';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -42,6 +42,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
     { name: 'Menu', href: '/admin/menu', icon: Coffee },
+    { name: 'Gallery', href: '/admin/gallery', icon: Camera },
     { name: 'Profile', href: '/admin/settings', icon: Settings },
     { name: 'Kontak Pesan', href: '/admin/contact', icon: MessageSquare },
     { name: 'Testimoni', href: '/admin/testimonials', icon: Star },

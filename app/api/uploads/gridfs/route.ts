@@ -23,19 +23,34 @@ export async function POST(request: NextRequest) {
     }
 
     const mime = file.type || 'application/octet-stream';
-    if (!mime.startsWith('image/')) {
-      return NextResponse.json({ error: 'Hanya gambar yang diizinkan' }, { status: 400 });
+    const isImage = mime.startsWith('image/');
+    const isVideo = mime.startsWith('video/');
+    
+    if (!isImage && !isVideo) {
+      return NextResponse.json({ error: 'Hanya gambar dan video yang diizinkan' }, { status: 400 });
     }
 
     // Ambil buffer dari Blob
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Di Vercel batasi 4MB, di non-Vercel 15MB
+    // Batas ukuran berbeda untuk gambar dan video
     const isVercel = !!process.env.VERCEL;
-    const maxBytes = isVercel ? 4 * 1024 * 1024 : 15 * 1024 * 1024;
+    let maxBytes;
+    
+    if (isVideo) {
+      // Video: 50MB di production, 100MB di development
+      maxBytes = isVercel ? 50 * 1024 * 1024 : 100 * 1024 * 1024;
+    } else {
+      // Image: 4MB di Vercel, 15MB di development
+      maxBytes = isVercel ? 4 * 1024 * 1024 : 15 * 1024 * 1024;
+    }
+    
     if (buffer.length > maxBytes) {
-      const human = isVercel ? '4MB (batas Vercel)' : '15MB';
-      return NextResponse.json({ error: `Ukuran file terlalu besar (maks ${human})` }, { status: 413 });
+      const humanSize = Math.round(maxBytes / (1024 * 1024));
+      const fileType = isVideo ? 'video' : 'gambar';
+      return NextResponse.json({ 
+        error: `Ukuran ${fileType} terlalu besar (maksimal ${humanSize}MB)` 
+      }, { status: 413 });
     }
 
     const db = mongoose.connection.db;
@@ -79,6 +94,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('GridFS upload error:', error);
-    return NextResponse.json({ error: 'Gagal mengunggah gambar' }, { status: 500 });
+    return NextResponse.json({ error: 'Gagal mengunggah file' }, { status: 500 });
   }
 }

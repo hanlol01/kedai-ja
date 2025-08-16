@@ -110,7 +110,7 @@ async function seedDatabase() {
       description: 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
       address: 'Jl. Raya Leles No.45, Garut',
       contact: '081234567890',
-      hours: 'Senin - Minggu, 09.00 - 21.00',
+      hours: 'Senin - Minggu, 11.00 - 22.00',
       email: 'info@kedai-ja.com'
     });
     await settings.save();

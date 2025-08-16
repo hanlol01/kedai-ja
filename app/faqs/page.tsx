@@ -23,7 +23,7 @@ export default function FAQs() {
     },
     {
       question: 'Berapa jam buka Kedai J.A?',
-      answer: 'Kedai J.A buka setiap hari Senin - Minggu dari pukul 09.00 - 21.00 WIB. Kami buka setiap hari termasuk hari libur nasional. Untuk layanan delivery, kami melayani hingga pukul 20.30.'
+      answer: 'Kedai J.A buka setiap hari Senin - Minggu dari pukul 11.00 - 22.00 WIB. Kami buka setiap hari termasuk hari libur nasional. Untuk layanan delivery, kami melayani hingga pukul 20.30.'
     },
     {
       question: 'Apakah bisa pesan untuk acara khusus atau dalam jumlah banyak?',

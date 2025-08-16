@@ -88,7 +88,7 @@ Script ini akan otomatis:
   "description": "Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi",
   "address": "Jl. Raya Leles No.45, Garut",
   "contact": "081234567890",
-  "hours": "Senin - Minggu, 09.00 - 21.00"
+  "hours": "Senin - Minggu, 11.00 - 22.00"
 }
 ```
 
@@ -157,7 +157,7 @@ Jika Anda ingin import manual atau sudah punya file JSON:
     "description": "Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi",
     "address": "Jl. Raya Leles No.45, Garut",
     "contact": "081234567890",
-    "hours": "Senin - Minggu, 09.00 - 21.00",
+    "hours": "Senin - Minggu, 11.00 - 22.00",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }

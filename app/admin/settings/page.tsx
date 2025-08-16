@@ -39,7 +39,7 @@ export default function AdminSettings() {
         description: data.settings?.description || 'Nikmati cita rasa autentik Indonesia dengan resep turun-temurun yang telah diwariskan dari generasi ke generasi',
         address: data.settings?.address || 'Jl. Raya Leles No.45, Garut',
         contact: data.settings?.contact || '081234567890',
-        hours: data.settings?.hours || 'Senin - Minggu, 09.00 - 21.00',
+        hours: data.settings?.hours || 'Senin - Minggu, 11.00 - 22.00',
         email: data.settings?.email || ''
       });
       setLoading(false);
@@ -181,7 +181,7 @@ export default function AdminSettings() {
                 value={settings.hours}
                 onChange={(e) => handleInputChange('hours', e.target.value)}
                 required
-                placeholder="e.g., Senin - Minggu, 09.00 - 21.00"
+                placeholder="e.g., Senin - Minggu, 11.00 - 22.00"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
               />
             </div>

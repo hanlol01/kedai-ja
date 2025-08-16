@@ -8,6 +8,13 @@ interface HeaderProps {
   currentPath?: string;
 }
 
+// Extend window interface for chatbot function
+declare global {
+  interface Window {
+    openChatbot?: () => void;
+  }
+}
+
 export default function Header({ currentPath = '/' }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -87,12 +94,16 @@ export default function Header({ currentPath = '/' }: HeaderProps) {
                 </Link>
               ))}
               <div className="ml-4 flex items-center space-x-3">
-                <Link
-                  href="/menu"
+                <button
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.openChatbot) {
+                      window.openChatbot();
+                    }
+                  }}
                   className="group inline-flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-xl hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <span className="font-medium">Pesan Sekarang</span>
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -129,13 +140,17 @@ export default function Header({ currentPath = '/' }: HeaderProps) {
                 </Link>
               ))}
               <div className="px-3 py-3">
-                <Link
-                  href="/menu"
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    if (typeof window !== 'undefined' && window.openChatbot) {
+                      window.openChatbot();
+                    }
+                  }}
                   className="group inline-flex items-center justify-center w-full space-x-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-xl hover:from-primary-600 hover:to-primary-700 hover:shadow-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   <span className="font-medium">Pesan Sekarang</span>
-                </Link>
+                </button>
               </div>
             </div>
           </div>
