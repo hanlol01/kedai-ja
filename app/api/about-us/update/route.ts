@@ -66,13 +66,10 @@ export async function POST(request: NextRequest) {
 
     const aboutUs = await Promise.race([updatePromise, timeoutPromise]);
     
-    // Update cache setelah berhasil update
-    setCache(aboutUs);
-
     // Konversi ke format yang benar untuk frontend
     const aboutUsObj = aboutUs as any;
     const formattedResponse = {
-      _id: aboutUsObj._id || '',
+      _id: aboutUsObj._id?.toString() || '',
       title: aboutUsObj.title || '',
       subtitle: aboutUsObj.subtitle || '',
       description: aboutUsObj.description || '',
@@ -90,6 +87,9 @@ export async function POST(request: NextRequest) {
         spotTempatDuduk: Array.isArray(aboutUsObj.images?.spotTempatDuduk) ? aboutUsObj.images.spotTempatDuduk : []
       }
     };
+
+    // Update cache setelah berhasil update dengan data yang sudah diformat
+    setCache(formattedResponse);
 
     return NextResponse.json({ 
       success: true,

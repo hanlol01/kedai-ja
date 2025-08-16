@@ -45,6 +45,7 @@ export default function AdminAboutUs() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<'basic' | 'company'>('basic');
+  const [lastSaveTime, setLastSaveTime] = useState<number>(0);
   const [imageFiles, setImageFiles] = useState<{[key: string]: File | null}>({
     image1: null,
     image2: null,
@@ -55,7 +56,11 @@ export default function AdminAboutUs() {
   });
 
   // Helper untuk cek apakah sedang berjalan di Vercel
-  const isVercel = typeof window !== 'undefined' && !!process.env.NEXT_PUBLIC_VERCEL;
+  const isVercel = typeof window !== 'undefined' && (
+    !!process.env.NEXT_PUBLIC_VERCEL || 
+    !!process.env.NEXT_PUBLIC_VERCEL_URL ||
+    window.location.hostname.includes('vercel.app')
+  );
 
   const isValidImageFile = (file: File) => {
     const isImage = file.type.startsWith('image/');
@@ -155,8 +160,16 @@ export default function AdminAboutUs() {
     fetchAboutUs();
   }, []);
 
-  const fetchAboutUs = async () => {
+  const fetchAboutUs = async (forceUpdate = false) => {
     try {
+      // Cek apakah baru saja melakukan save (dalam 5 detik terakhir)
+      // Jika ya dan tidak dipaksa, skip fetch untuk mencegah override
+      const timeSinceLastSave = Date.now() - lastSaveTime;
+      if (!forceUpdate && lastSaveTime > 0 && timeSinceLastSave < 5000) {
+        console.log("Skipping fetch karena baru saja melakukan save", timeSinceLastSave, "ms yang lalu");
+        return;
+      }
+      
       // Menambahkan timestamp untuk menghindari cache browser
       const timestamp = new Date().getTime();
       const response = await fetch(`/api/about-us?t=${timestamp}`, {
@@ -314,6 +327,7 @@ export default function AdminAboutUs() {
       });
 
       setSuccess('Data tentang kami berhasil disimpan');
+      setLastSaveTime(Date.now()); // Set waktu save untuk mencegah override
       setImageFiles({
         image1: null,
         image2: null,
@@ -343,15 +357,24 @@ export default function AdminAboutUs() {
         
         // Simpan juga ke localStorage untuk persistence
         saveToLocalStorage(updatedData);
+        
+        // Di Vercel, tidak perlu reload ulang karena sudah dapat data terbaru dari POST response
+        // Reload hanya diperlukan jika ada keraguan tentang konsistensi data
+        if (!isVercel) {
+          console.log("Non-Vercel environment: Scheduling data reload after update");
+          setTimeout(() => {
+            console.log("Executing reload after update");
+            fetchAboutUs();
+          }, 1000);
+        } else {
+          console.log("Vercel environment: Using POST response data, skipping reload to prevent form reset");
+        }
       }
 
-      // Reload data untuk memastikan state terupdate dengan benar dari server
-      console.log("Scheduling data reload after successful update");
-      // Menunggu lebih lama (2 detik) untuk memastikan data sudah tersimpan di Vercel
+      // Clear success message setelah 3 detik
       setTimeout(() => {
-        console.log("Executing reload after update");
-        fetchAboutUs();
-      }, 2000);
+        setSuccess('');
+      }, 3000);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan data.');
     } finally {
