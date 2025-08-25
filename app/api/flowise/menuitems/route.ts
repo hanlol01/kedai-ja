@@ -5,21 +5,25 @@ import MenuItem from '@/models/MenuItem';
 export async function GET() {
   try {
     await connectDB();
-    
-    const menuItems = await MenuItem.find({}).lean();
-    
+
+    // Ambil semua data tapi exclude "image" dan "__v"
+    const menuItems = await MenuItem.find({}, { image: 0, __v: 0 }).lean();
+
     return NextResponse.json({
       success: true,
       data: menuItems,
       total: menuItems.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching menu items:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch menu items',
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch menu items',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }
