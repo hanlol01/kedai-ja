@@ -8,14 +8,14 @@ export async function GET() {
   try {
     await connectDB();
     
-    // Fetch data from required collections only
+    // Fetch data dari collection dengan projection
     const [menuItems, faqs, bestSellers] = await Promise.all([
-      MenuItem.find({}).lean(),
-      FAQ.find({}).lean(),
-      BestSeller.find({}).lean()
+      MenuItem.find({}, { image: 0, __v: 0 }).lean(),  // exclude image & __v
+      FAQ.find({}, { __v: 0 }).lean(),
+      BestSeller.find({}, { __v: 0 }).lean()
     ]);
     
-    // Combine all data
+    // Gabungkan semua data
     const allData = {
       menuItems: {
         data: menuItems,
@@ -40,12 +40,15 @@ export async function GET() {
         timestamp: new Date().toISOString()
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching all data:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch all data',
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch all data',
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    );
   }
 }
