@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Poppins } from 'next/font/google';
-import Script from 'next/script';
+import ChatbotScript from '@/components/ui/ChatbotScript';
 import '@/lib/init'; // Initialize cron jobs and system
 
 
@@ -36,8 +36,8 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white`}>
         {children}
         
-        {/* Chatbot JS */}
-        <Script src="/chatbot.js" strategy="afterInteractive" />
+        {/* Chatbot JS - hanya load di halaman public */}
+        <ChatbotScript />
       </body>
     </html>
   );

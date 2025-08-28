@@ -58,3 +58,4 @@ GallerySchema.index({ isActive: 1, createdAt: -1 });
 GallerySchema.index({ fileType: 1, isActive: 1 });
 
 export default mongoose.models.Gallery || mongoose.model<IGallery>('Gallery', GallerySchema);
+

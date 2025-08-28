@@ -59,8 +59,8 @@ export default function About() {
   const fetchAboutUs = async () => {
     // Default cepat agar UI segera tampil
     const defaultAbout: AboutUsData = {
-      title: 'About Us',
-      subtitle: 'Welcome to Kedai J.A',
+      title: 'Tentang Kami',
+      subtitle: 'Seputar Kedai J.A',
       companyDescription: 'Kedai J.A adalah destinasi kuliner yang menghadirkan cita rasa autentik Indonesia dengan sentuhan modern.',
       yearsOfExperience: 7,
       masterChefs: 25,
@@ -140,7 +140,7 @@ export default function About() {
 
   return (
     <MainLayout>
-      <div className="container-fluid py-8">
+      <div className="container-fluid py-8 pt-20 md:pt-24 lg:pt-28">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="heading-primary text-5xl md:text-6xl lg:text-7xl text-white mb-6">
@@ -175,7 +175,7 @@ export default function About() {
                 <div className="text-5xl font-bold relative">{aboutUs?.yearsOfExperience}</div>
               </div>
               <div className="text-xl font-semibold mb-4">Tahun Berdiri</div>
-              <p className="text-center text-white text-base">Kedai J.A berdiri sejak tahun {aboutUs?.yearsOfExperience}. Berawal dari kecintaan terhadap kuliner nusantara, kami berkomitmen melestarikan warisan resep turun-temurun dan menghadirkan pengalaman makan yang hangat serta penuh makna bagi setiap pelanggan.</p>
+              <p className="text-center text-white text-base">Kedai J.A sudah berdiri selama {aboutUs?.yearsOfExperience} tahun. Berawal dari kecintaan terhadap kuliner nusantara, kami berkomitmen melestarikan warisan resep turun-temurun dan menghadirkan pengalaman makan yang hangat serta penuh makna bagi setiap pelanggan.</p>
             </div>
             
             {/* Spot Tempat Duduk */}

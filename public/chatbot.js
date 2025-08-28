@@ -3,7 +3,7 @@
 
     // Configuration
     const CONFIG = {
-        FLOWISE_API: 'https://cloud.flowiseai.com/api/v1/prediction/8ddd31a1-3d18-432d-bf8e-ac2576c85b73',
+        FLOWISE_API: 'https://cloud.flowiseai.com/api/v1/prediction/f847b1bc-f28d-4921-8e96-e9b730d0360c',
         WHATSAPP_NUMBER: '62857979541136',
         WHATSAPP_MESSAGE: 'Halo, saya ingin bertanya tentang pemesanan di Kedai J.A',
         WELCOME_MESSAGE: `Halo! Selamat datang di Kedai J.A 👋
@@ -784,6 +784,87 @@ Saya siap membantu Anda dengan informasi menu, jam operasional, lokasi, dan peme
     content.toLowerCase().includes('berikut adalah konfirmasi pesanan') ||
     content.toLowerCase().includes('konfirmasi pesanan kak') ||
     content.toLowerCase().includes('konfirmasi pesanan anda') ||
+    // Keyword baru untuk memperkuat deteksi konfirmasi pesanan akhir
+    content.toLowerCase().includes('konfirmasi pesanan admin whatsapp') ||
+    content.toLowerCase().includes('lanjut konfirmasi admin whatsapp') ||
+    content.toLowerCase().includes('klik tombol konfirmasi') ||
+    content.toLowerCase().includes('confirm_order') ||
+    content.toLowerCase().includes('confirm order') ||
+    content.toLowerCase().includes('konfirmasi order') ||
+    content.toLowerCase().includes('lanjut ke whatsapp') ||
+    content.toLowerCase().includes('hubungi admin untuk konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi ke admin') ||
+    content.toLowerCase().includes('lanjut konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi akhir') ||
+    content.toLowerCase().includes('konfirmasi pesanan akhir') ||
+    content.toLowerCase().includes('lanjut ke admin') ||
+    content.toLowerCase().includes('hubungi admin') ||
+    content.toLowerCase().includes('konfirmasi via whatsapp') ||
+    content.toLowerCase().includes('lanjut via whatsapp') ||
+    content.toLowerCase().includes('konfirmasi pembayaran') ||
+    content.toLowerCase().includes('lanjut pembayaran') ||
+    content.toLowerCase().includes('konfirmasi pesanan anda') ||
+    content.toLowerCase().includes('konfirmasi pesanan kak') ||
+    content.toLowerCase().includes('konfirmasi pesanan customer') ||
+    content.toLowerCase().includes('konfirmasi pesanan pelanggan') ||
+    content.toLowerCase().includes('lanjut ke whatsapp admin') ||
+    content.toLowerCase().includes('hubungi whatsapp admin') ||
+    content.toLowerCase().includes('konfirmasi ke whatsapp admin') ||
+    content.toLowerCase().includes('lanjut konfirmasi ke admin') ||
+    content.toLowerCase().includes('konfirmasi pesanan ke admin') ||
+    content.toLowerCase().includes('lanjut ke admin whatsapp') ||
+    content.toLowerCase().includes('hubungi admin whatsapp') ||
+    content.toLowerCase().includes('konfirmasi pesanan admin') ||
+    content.toLowerCase().includes('lanjut konfirmasi admin') ||
+    content.toLowerCase().includes('konfirmasi order admin') ||
+    content.toLowerCase().includes('lanjut order admin') ||
+    content.toLowerCase().includes('konfirmasi pesanan final') ||
+    content.toLowerCase().includes('konfirmasi pesanan terakhir') ||
+    content.toLowerCase().includes('lanjut ke tahap konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi pesanan selanjutnya') ||
+    content.toLowerCase().includes('lanjut ke proses konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi pesanan lanjutan') ||
+    content.toLowerCase().includes('lanjut ke konfirmasi admin') ||
+    content.toLowerCase().includes('konfirmasi pesanan admin whatsapp') ||
+    content.toLowerCase().includes('lanjut konfirmasi admin whatsapp') ||
+    content.toLowerCase().includes('klik tombol konfirmasi') ||
+    content.toLowerCase().includes('confirm_order') ||
+    content.toLowerCase().includes('confirm order') ||
+    content.toLowerCase().includes('konfirmasi order') ||
+    content.toLowerCase().includes('lanjut ke whatsapp') ||
+    content.toLowerCase().includes('hubungi admin untuk konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi ke admin') ||
+    content.toLowerCase().includes('lanjut konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi akhir') ||
+    content.toLowerCase().includes('konfirmasi pesanan akhir') ||
+    content.toLowerCase().includes('lanjut ke admin') ||
+    content.toLowerCase().includes('hubungi admin') ||
+    content.toLowerCase().includes('konfirmasi via whatsapp') ||
+    content.toLowerCase().includes('lanjut via whatsapp') ||
+    content.toLowerCase().includes('konfirmasi pembayaran') ||
+    content.toLowerCase().includes('lanjut pembayaran') ||
+    content.toLowerCase().includes('konfirmasi pesanan anda') ||
+    content.toLowerCase().includes('konfirmasi pesanan kak') ||
+    content.toLowerCase().includes('konfirmasi pesanan customer') ||
+    content.toLowerCase().includes('konfirmasi pesanan pelanggan') ||
+    content.toLowerCase().includes('lanjut ke whatsapp admin') ||
+    content.toLowerCase().includes('hubungi whatsapp admin') ||
+    content.toLowerCase().includes('konfirmasi ke whatsapp admin') ||
+    content.toLowerCase().includes('lanjut konfirmasi ke admin') ||
+    content.toLowerCase().includes('konfirmasi pesanan ke admin') ||
+    content.toLowerCase().includes('lanjut ke admin whatsapp') ||
+    content.toLowerCase().includes('hubungi admin whatsapp') ||
+    content.toLowerCase().includes('konfirmasi pesanan admin') ||
+    content.toLowerCase().includes('lanjut konfirmasi admin') ||
+    content.toLowerCase().includes('konfirmasi order admin') ||
+    content.toLowerCase().includes('lanjut order admin') ||
+    content.toLowerCase().includes('konfirmasi pesanan final') ||
+    content.toLowerCase().includes('konfirmasi pesanan terakhir') ||
+    content.toLowerCase().includes('lanjut ke tahap konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi pesanan selanjutnya') ||
+    content.toLowerCase().includes('lanjut ke proses konfirmasi') ||
+    content.toLowerCase().includes('konfirmasi pesanan lanjutan') ||
+    content.toLowerCase().includes('lanjut ke konfirmasi admin') ||
     (
         content.toLowerCase().includes('pesanan atas nama') &&
         content.toLowerCase().includes('dengan tipe pengiriman') &&
@@ -1515,7 +1596,83 @@ const sendToFlowise = async (message) => {
         // Determine if should show WhatsApp button
         const showWhatsApp = message.toLowerCase().includes('admin') || 
                             message.toLowerCase().includes('hubungi') ||
-                            aiResponse.toLowerCase().includes('admin');
+                            // Keyword baru untuk memperkuat deteksi konfirmasi pesanan akhir
+                            message.toLowerCase().includes('konfirmasi pesanan admin whatsapp') ||
+                            message.toLowerCase().includes('lanjut konfirmasi admin whatsapp') ||
+                            message.toLowerCase().includes('klik tombol konfirmasi') ||
+                            message.toLowerCase().includes('confirm_order') ||
+                            message.toLowerCase().includes('confirm order') ||
+                            message.toLowerCase().includes('konfirmasi order') ||
+                            message.toLowerCase().includes('lanjut ke whatsapp') ||
+                            message.toLowerCase().includes('hubungi admin untuk konfirmasi') ||
+                            message.toLowerCase().includes('konfirmasi ke admin') ||
+                            message.toLowerCase().includes('lanjut konfirmasi') ||
+                            message.toLowerCase().includes('konfirmasi akhir') ||
+                            message.toLowerCase().includes('konfirmasi pesanan akhir') ||
+                            message.toLowerCase().includes('lanjut ke admin') ||
+                            message.toLowerCase().includes('konfirmasi via whatsapp') ||
+                            message.toLowerCase().includes('lanjut via whatsapp') ||
+                            message.toLowerCase().includes('konfirmasi pembayaran') ||
+                            message.toLowerCase().includes('lanjut pembayaran') ||
+                            message.toLowerCase().includes('konfirmasi pesanan customer') ||
+                            message.toLowerCase().includes('konfirmasi pesanan pelanggan') ||
+                            message.toLowerCase().includes('lanjut ke whatsapp admin') ||
+                            message.toLowerCase().includes('hubungi whatsapp admin') ||
+                            message.toLowerCase().includes('konfirmasi ke whatsapp admin') ||
+                            message.toLowerCase().includes('lanjut konfirmasi ke admin') ||
+                            message.toLowerCase().includes('konfirmasi pesanan ke admin') ||
+                            message.toLowerCase().includes('lanjut ke admin whatsapp') ||
+                            message.toLowerCase().includes('hubungi admin whatsapp') ||
+                            message.toLowerCase().includes('konfirmasi pesanan admin') ||
+                            message.toLowerCase().includes('lanjut konfirmasi admin') ||
+                            message.toLowerCase().includes('konfirmasi order admin') ||
+                            message.toLowerCase().includes('lanjut order admin') ||
+                            message.toLowerCase().includes('konfirmasi pesanan final') ||
+                            message.toLowerCase().includes('konfirmasi pesanan terakhir') ||
+                            message.toLowerCase().includes('lanjut ke tahap konfirmasi') ||
+                            message.toLowerCase().includes('konfirmasi pesanan selanjutnya') ||
+                            message.toLowerCase().includes('lanjut ke proses konfirmasi') ||
+                            message.toLowerCase().includes('konfirmasi pesanan lanjutan') ||
+                            message.toLowerCase().includes('lanjut ke konfirmasi admin') ||
+                            aiResponse.toLowerCase().includes('admin') ||
+                            // Keyword baru untuk AI response
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan admin whatsapp') ||
+                            aiResponse.toLowerCase().includes('lanjut konfirmasi admin whatsapp') ||
+                            aiResponse.toLowerCase().includes('klik tombol konfirmasi') ||
+                            aiResponse.toLowerCase().includes('confirm_order') ||
+                            aiResponse.toLowerCase().includes('confirm order') ||
+                            aiResponse.toLowerCase().includes('konfirmasi order') ||
+                            aiResponse.toLowerCase().includes('lanjut ke whatsapp') ||
+                            aiResponse.toLowerCase().includes('hubungi admin untuk konfirmasi') ||
+                            aiResponse.toLowerCase().includes('konfirmasi ke admin') ||
+                            aiResponse.toLowerCase().includes('lanjut konfirmasi') ||
+                            aiResponse.toLowerCase().includes('konfirmasi akhir') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan akhir') ||
+                            aiResponse.toLowerCase().includes('lanjut ke admin') ||
+                            aiResponse.toLowerCase().includes('konfirmasi via whatsapp') ||
+                            aiResponse.toLowerCase().includes('lanjut via whatsapp') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pembayaran') ||
+                            aiResponse.toLowerCase().includes('lanjut pembayaran') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan customer') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan pelanggan') ||
+                            aiResponse.toLowerCase().includes('lanjut ke whatsapp admin') ||
+                            aiResponse.toLowerCase().includes('hubungi whatsapp admin') ||
+                            aiResponse.toLowerCase().includes('konfirmasi ke whatsapp admin') ||
+                            aiResponse.toLowerCase().includes('lanjut konfirmasi ke admin') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan ke admin') ||
+                            aiResponse.toLowerCase().includes('lanjut ke admin whatsapp') ||
+                            aiResponse.toLowerCase().includes('hubungi admin whatsapp') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan admin') ||
+                            aiResponse.toLowerCase().includes('lanjut konfirmasi admin') ||
+                            aiResponse.toLowerCase().includes('konfirmasi order admin') ||
+                            aiResponse.toLowerCase().includes('lanjut order admin') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan final') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan terakhir') ||
+                            aiResponse.toLowerCase().includes('lanjut ke tahap konfirmasi') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan selanjutnya') ||
+                            aiResponse.toLowerCase().includes('lanjut ke proses konfirmasi') ||
+                            aiResponse.toLowerCase().includes('konfirmasi pesanan lanjutan') ||
+                            aiResponse.toLowerCase().includes('lanjut ke konfirmasi admin');
         
         // Add AI response
         addMessage(aiResponse.replace(/\n/g, '<br>'), 'bot', showWhatsApp);
@@ -1609,12 +1766,88 @@ const sendToFlowise = async (message) => {
                                 reply.toLowerCase().includes('pesan') ||
                                 reply.toLowerCase().includes('order') ||
                                 reply.toLowerCase().includes('pemesanan') ||
+                                // Keyword baru untuk memperkuat deteksi konfirmasi pesanan akhir
+                                reply.toLowerCase().includes('konfirmasi pesanan admin whatsapp') ||
+                                reply.toLowerCase().includes('lanjut konfirmasi admin whatsapp') ||
+                                reply.toLowerCase().includes('klik tombol konfirmasi') ||
+                                reply.toLowerCase().includes('confirm_order') ||
+                                reply.toLowerCase().includes('confirm order') ||
+                                reply.toLowerCase().includes('konfirmasi order') ||
+                                reply.toLowerCase().includes('lanjut ke whatsapp') ||
+                                reply.toLowerCase().includes('hubungi admin untuk konfirmasi') ||
+                                reply.toLowerCase().includes('konfirmasi ke admin') ||
+                                reply.toLowerCase().includes('lanjut konfirmasi') ||
+                                reply.toLowerCase().includes('konfirmasi akhir') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan akhir') ||
+                                reply.toLowerCase().includes('lanjut ke admin') ||
+                                reply.toLowerCase().includes('konfirmasi via whatsapp') ||
+                                reply.toLowerCase().includes('lanjut via whatsapp') ||
+                                reply.toLowerCase().includes('konfirmasi pembayaran') ||
+                                reply.toLowerCase().includes('lanjut pembayaran') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan customer') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan pelanggan') ||
+                                reply.toLowerCase().includes('lanjut ke whatsapp admin') ||
+                                reply.toLowerCase().includes('hubungi whatsapp admin') ||
+                                reply.toLowerCase().includes('konfirmasi ke whatsapp admin') ||
+                                reply.toLowerCase().includes('lanjut konfirmasi ke admin') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan ke admin') ||
+                                reply.toLowerCase().includes('lanjut ke admin whatsapp') ||
+                                reply.toLowerCase().includes('hubungi admin whatsapp') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan admin') ||
+                                reply.toLowerCase().includes('lanjut konfirmasi admin') ||
+                                reply.toLowerCase().includes('konfirmasi order admin') ||
+                                reply.toLowerCase().includes('lanjut order admin') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan final') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan terakhir') ||
+                                reply.toLowerCase().includes('lanjut ke tahap konfirmasi') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan selanjutnya') ||
+                                reply.toLowerCase().includes('lanjut ke proses konfirmasi') ||
+                                reply.toLowerCase().includes('konfirmasi pesanan lanjutan') ||
+                                reply.toLowerCase().includes('lanjut ke konfirmasi admin') ||
                                 aiResponse.toLowerCase().includes('admin') ||
                                 aiResponse.toLowerCase().includes('whatsapp') ||
                                 aiResponse.toLowerCase().includes('wa') ||
                                 aiResponse.toLowerCase().includes('acara') ||
                                 aiResponse.toLowerCase().includes('tolong') ||
-                                aiResponse.toLowerCase().includes('hubungi');
+                                aiResponse.toLowerCase().includes('hubungi') ||
+                                // Keyword baru untuk AI response
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan admin whatsapp') ||
+                                aiResponse.toLowerCase().includes('lanjut konfirmasi admin whatsapp') ||
+                                aiResponse.toLowerCase().includes('klik tombol konfirmasi') ||
+                                aiResponse.toLowerCase().includes('confirm_order') ||
+                                aiResponse.toLowerCase().includes('confirm order') ||
+                                aiResponse.toLowerCase().includes('konfirmasi order') ||
+                                aiResponse.toLowerCase().includes('lanjut ke whatsapp') ||
+                                aiResponse.toLowerCase().includes('hubungi admin untuk konfirmasi') ||
+                                aiResponse.toLowerCase().includes('konfirmasi ke admin') ||
+                                aiResponse.toLowerCase().includes('lanjut konfirmasi') ||
+                                aiResponse.toLowerCase().includes('konfirmasi akhir') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan akhir') ||
+                                aiResponse.toLowerCase().includes('lanjut ke admin') ||
+                                aiResponse.toLowerCase().includes('konfirmasi via whatsapp') ||
+                                aiResponse.toLowerCase().includes('lanjut via whatsapp') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pembayaran') ||
+                                aiResponse.toLowerCase().includes('lanjut pembayaran') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan customer') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan pelanggan') ||
+                                aiResponse.toLowerCase().includes('lanjut ke whatsapp admin') ||
+                                aiResponse.toLowerCase().includes('hubungi whatsapp admin') ||
+                                aiResponse.toLowerCase().includes('konfirmasi ke whatsapp admin') ||
+                                aiResponse.toLowerCase().includes('lanjut konfirmasi ke admin') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan ke admin') ||
+                                aiResponse.toLowerCase().includes('lanjut ke admin whatsapp') ||
+                                aiResponse.toLowerCase().includes('hubungi admin whatsapp') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan admin') ||
+                                aiResponse.toLowerCase().includes('lanjut konfirmasi admin') ||
+                                aiResponse.toLowerCase().includes('konfirmasi order admin') ||
+                                aiResponse.toLowerCase().includes('lanjut order admin') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan final') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan terakhir') ||
+                                aiResponse.toLowerCase().includes('lanjut ke tahap konfirmasi') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan selanjutnya') ||
+                                aiResponse.toLowerCase().includes('lanjut ke proses konfirmasi') ||
+                                aiResponse.toLowerCase().includes('konfirmasi pesanan lanjutan') ||
+                                aiResponse.toLowerCase().includes('lanjut ke konfirmasi admin');
 
             // Add AI response from Flowise
             addMessage(aiResponse.replace(/\n/g, '<br>'), 'bot', showWhatsApp);
