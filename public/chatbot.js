@@ -3,7 +3,7 @@
 
     // Configuration
     const CONFIG = {
-        FLOWISE_API: 'https://cloud.flowiseai.com/api/v1/prediction/f847b1bc-f28d-4921-8e96-e9b730d0360c',
+        FLOWISE_API: 'https://cloud.flowiseai.com/canvas/f847b1bc-f28d-4921-8e96-e9b730d0360c',
         WHATSAPP_NUMBER: '62857979541136',
         WHATSAPP_MESSAGE: 'Halo, saya ingin bertanya tentang pemesanan di Kedai J.A',
         WELCOME_MESSAGE: `Halo! Selamat datang di Kedai J.A 👋
