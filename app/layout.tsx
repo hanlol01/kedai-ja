@@ -22,8 +22,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Kedai J.A - Authentic Indonesian Cuisine',
-  description: 'Kedai J.A menyajikan makanan Indonesia autentik dengan cita rasa tradisional yang telah diturunkan dari generasi ke generasi.',
+  title: 'Kedai J.A',
+  description: 'Kedai J.A menyajikan kuliner sederhana tradisional bagi keluarga.',
 };
 
 export default function RootLayout({
